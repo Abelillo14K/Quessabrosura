@@ -2,30 +2,96 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Ventas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ventas - Quessabrosura</title>
   <link rel="stylesheet" href="ventas.css">
 </head>
 <body>
   <header>
-    <h1>Registro de Ventas</h1>
+    <div class="header-content">
+      <h1>💰 Registro de Ventas</h1>
+      <p class="subtitle">Historial de transacciones</p>
+    </div>
   </header>
 
   <main>
-    <table id="tablaVentas">
-      <tr>
-        <th>ID</th>
-        <th>Fecha</th>
-        <th>Hora</th>
-        <th>Total</th>
-        <th>Método de Pago</th>
-        <th>Empleado</th>
-      </tr>
-    </table>
+    <section class="summary-section">
+      <div class="summary-card">
+        <div class="summary-icon">💵</div>
+        <div class="summary-info">
+          <span class="summary-label">Ventas de Hoy</span>
+          <span class="summary-value" id="ventasHoy">Q0.00</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">📊</div>
+        <div class="summary-info">
+          <span class="summary-label">Total Transacciones</span>
+          <span class="summary-value" id="totalTransacciones">0</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">💳</div>
+        <div class="summary-info">
+          <span class="summary-label">Efectivo</span>
+          <span class="summary-value" id="efectivoTotal">Q0.00</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">🏦</div>
+        <div class="summary-info">
+          <span class="summary-label">Tarjeta</span>
+          <span class="summary-value" id="tarjetaTotal">Q0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="filter-section">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="fechaInicio">Desde</label>
+          <input type="date" id="fechaInicio" onchange="filtrarVentas()">
+        </div>
+        <div class="filter-group">
+          <label for="fechaFin">Hasta</label>
+          <input type="date" id="fechaFin" onchange="filtrarVentas()">
+        </div>
+        <div class="filter-group">
+          <label for="filtroMetodo">Método de Pago</label>
+          <select id="filtroMetodo" onchange="filtrarVentas()">
+            <option value="">Todos</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Tarjeta">Tarjeta</option>
+            <option value="Transferencia">Transferencia</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="table-section">
+      <h2>Detalle de Ventas</h2>
+      <table id="tablaVentas">
+        <thead>
+          <tr>
+            <th># Venta</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Total</th>
+            <th>Método de Pago</th>
+            <th>Empleado</th>
+          </tr>
+        </thead>
+        <tbody id="tabla">
+        </tbody>
+      </table>
+    </section>
   </main>
 
   <footer>
     <p>Sistema Quessabrosura © 2026</p>
   </footer>
+
+  <div id="mensaje" class="mensaje"></div>
 
   <script src="ventas.js"></script>
 </body>

@@ -10,6 +10,9 @@ app.use(express.json());
 const empleadosRoutes = require('./routes/empleados');
 app.use('/empleados', empleadosRoutes);
 
+const comprasRoutes = require('./routes/compras');
+app.use('/compras', comprasRoutes);
+
 // servir frontend
 app.use(express.static('public'));
 

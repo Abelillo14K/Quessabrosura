@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compras - Quessabrosura</title>
+  <link rel="stylesheet" href="compras.css">
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>🛒 Registro de Compras</h1>
+      <p class="subtitle">Gestión de inventario y proveedores</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="form-section">
+      <h2>Nueva Compra</h2>
+      <form id="compraForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="producto">ID Producto</label>
+            <input type="number" id="producto" placeholder="Ingrese ID del producto" required>
+          </div>
+          <div class="form-group">
+            <label for="cantidad">Cantidad</label>
+            <input type="number" id="cantidad" placeholder="Cantidad" min="1" required>
+          </div>
+          <div class="form-group">
+            <label for="precio">Precio Unitario (Q)</label>
+            <input type="number" id="precio" placeholder="Q0.00" step="0.01" min="0" required>
+          </div>
+          <button type="button" class="btn-add" onclick="agregar()">Agregar</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="list-section">
+      <h2>Items en Carrito</h2>
+      <table id="tablaCarrito">
+        <thead>
+          <tr>
+            <th>ID Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unit.</th>
+            <th>Subtotal</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="lista">
+          <tr class="empty-row">
+            <td colspan="5">No hay productos agregados</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="total-label">Total:</td>
+            <td colspan="2" class="total-value" id="totalCarrito">Q0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="actions">
+        <button class="btn-save" onclick="guardarCompra()">💾 Guardar Compra</button>
+        <button class="btn-clear" onclick="limpiarCarrito()">🗑️ Limpiar</button>
+      </div>
+    </section>
+
+    <section class="history-section">
+      <h2>Historial de Compras</h2>
+      <table id="tablaHistorial">
+        <thead>
+          <tr>
+            <th># Compra</th>
+            <th>Fecha</th>
+            <th>Total</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="historial">
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>Sistema Quessabrosura © 2026</p>
+  </footer>
+
+  <div id="mensaje" class="mensaje"></div>
+
+  <script src="compras.js"></script>
+</body>
+</html>
