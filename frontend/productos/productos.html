@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Productos - Quessabrosura</title>
+  <link rel="stylesheet" href="productos.css">
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>🥐 Gestión de Productos</h1>
+      <p class="subtitle">Administración del inventario</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="form-section">
+      <h2>Nuevo Producto</h2>
+      <form id="productoForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" placeholder="Nombre del producto" required>
+          </div>
+          <div class="form-group">
+            <label for="presentacion">Presentación</label>
+            <input type="text" id="presentacion" placeholder="ej: 500g, 1L">
+          </div>
+          <div class="form-group">
+            <label for="stock">Stock</label>
+            <input type="number" id="stock" placeholder="Cantidad" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="precio_compra">Precio Compra</label>
+            <input type="number" step="0.01" id="precio_compra" placeholder="Q0.00" min="0">
+          </div>
+          <div class="form-group">
+            <label for="precio_venta">Precio Venta</label>
+            <input type="number" step="0.01" id="precio_venta" placeholder="Q0.00" min="0">
+          </div>
+          <div class="form-group">
+            <label for="id_categoria">Categoría</label>
+            <select id="id_categoria">
+              <option value="1">Panadería</option>
+              <option value="2">Repostería</option>
+              <option value="3">Bebidas</option>
+              <option value="4">Snacks</option>
+            </select>
+          </div>
+        </div>
+        <button type="button" class="btn-add" onclick="crearProducto()">➕ Agregar</button>
+      </form>
+    </section>
+
+    <section class="list-section">
+      <h2>Lista de Productos</h2>
+      <div class="search-box">
+        <input type="text" id="busqueda" placeholder="🔍 Buscar producto..." oninput="buscarProducto()">
+      </div>
+      <table id="tablaProductos">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Presentación</th>
+            <th>P. Compra</th>
+            <th>P. Venta</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla">
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>Sistema Quessabrosura © 2026</p>
+  </footer>
+
+  <div id="modalEditar" class="modal">
+    <div class="modal-content">
+      <h2>Editar Producto</h2>
+      <form id="formEditar">
+        <input type="hidden" id="editId">
+        <div class="form-group">
+          <label for="editNombre">Nombre</label>
+          <input type="text" id="editNombre" required>
+        </div>
+        <div class="form-group">
+          <label for="editPresentacion">Presentación</label>
+          <input type="text" id="editPresentacion">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editPrecioCompra">Precio Compra</label>
+            <input type="number" step="0.01" id="editPrecioCompra" min="0">
+          </div>
+          <div class="form-group">
+            <label for="editPrecioVenta">Precio Venta</label>
+            <input type="number" step="0.01" id="editPrecioVenta" min="0">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editStock">Stock</label>
+          <input type="number" id="editStock" min="0">
+        </div>
+        <div class="form-group">
+          <label for="editCategoria">Categoría</label>
+          <select id="editCategoria">
+            <option value="1">Panadería</option>
+            <option value="2">Repostería</option>
+            <option value="3">Bebidas</option>
+            <option value="4">Snacks</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-save" onclick="actualizarProducto()">💾 Guardar</button>
+          <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="mensaje" class="mensaje"></div>
+  <script src="productos.js"></script>
+</body>
+</html>
