@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/login';
+const API_URL = `${window.location.origin}/api/login`;
 const mensajeError = document.getElementById('mensajeError');
 const btnSubmit = document.getElementById('btnSubmit');
 const btnText = document.getElementById('btnText');
@@ -33,7 +33,7 @@ function iniciarSesion(e) {
         }
     })
     .catch(err => {
-        mostrarError('Error de conexión. Verifique el servidor.');
+        mostrarError('Error de conexión: ' + err.message);
     })
     .finally(() => {
         btnSubmit.disabled = false;

@@ -13,6 +13,15 @@ body {
   flex-direction: column;
 }
 
+body.with-sidebar main {
+  margin-left: 220px;
+  margin-right: auto;
+}
+
+body.with-sidebar header {
+  margin-left: 220px;
+}
+
 header {
   background: linear-gradient(135deg, #f9d423 0%, #f9a825 100%);
   padding: 20px 30px;

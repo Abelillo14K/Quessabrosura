@@ -1,16 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const controller = require('../controllers/ventaController');
 
-// Obtener todas las ventas
-router.get('/', (req, res) => {
-  db.query('SELECT * FROM venta', (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ error: 'Error al obtener ventas' });
-    }
-    res.json(results);
-  });
-});
+router.get('/', controller.obtenerVentas);
+router.post('/', controller.crearVenta);
+router.get('/fechas', controller.obtenerVentasPorFecha);
 
 module.exports = router;

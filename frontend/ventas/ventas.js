@@ -12,7 +12,7 @@ function getMethodClass(metodo) {
 }
 
 function cargarVentas() {
-    fetch('http://localhost:3000/ventas')
+    fetch(`${window.location.origin}/api/ventas`)
         .then(res => res.json())
         .then(data => {
             ventas = data;
@@ -115,5 +115,10 @@ function mostrarMensaje(texto, tipo) {
 const fechaHoy = new Date().toISOString().split('T')[0];
 document.getElementById('fechaInicio').value = fechaHoy;
 document.getElementById('fechaFin').value = fechaHoy;
+
+function cerrarSesion() {
+    sessionStorage.removeItem('empleado');
+    window.location.href = '../login/login.html';
+}
 
 cargarVentas();

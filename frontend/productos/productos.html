@@ -4,9 +4,28 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Productos - Quessabrosura</title>
+  <link rel="stylesheet" href="../menu.css">
   <link rel="stylesheet" href="productos.css">
 </head>
-<body>
+<body class="with-sidebar">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span>🥐</span>
+      <h2>Quessabrosura</h2>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
+      <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
+      <li><a href="../compras/compras.html"><span class="icon">🛒</span>Compras</a></li>
+      <li><a href="../productos/productos.html" class="active"><span class="icon">🥐</span>Productos</a></li>
+      <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
+      <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+  </nav>
+
   <header>
     <div class="header-content">
       <h1>🥐 Gestión de Productos</h1>

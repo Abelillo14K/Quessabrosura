@@ -82,7 +82,7 @@ function guardarCompra() {
         return;
     }
 
-    fetch('http://localhost:3000/compras', {
+    fetch(`${window.location.origin}/api/compras`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productos })
@@ -91,7 +91,12 @@ function guardarCompra() {
         if (res.ok) {
             productos = [];
             mostrarLista();
-            cargarHistorial();
+function cerrarSesion() {
+    sessionStorage.removeItem('empleado');
+    window.location.href = '../login/login.html';
+}
+
+cargarHistorial();
             mostrarMensaje('Compra guardada exitosamente', 'exito');
         } else {
             mostrarMensaje('Error al guardar la compra', 'error');
@@ -103,7 +108,7 @@ function guardarCompra() {
 }
 
 function cargarHistorial() {
-    fetch('http://localhost:3000/compras')
+    fetch(`${window.location.origin}/api/compras`)
         .then(res => res.json())
         .then(data => {
             historial.innerHTML = '';

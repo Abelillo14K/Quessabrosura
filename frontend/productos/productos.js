@@ -9,7 +9,7 @@ function getStockClass(stock) {
 }
 
 function cargarProductos() {
-    fetch('http://localhost:3000/productos')
+    fetch(`${window.location.origin}/api/productos`)
         .then(res => res.json())
         .then(data => {
             productos = data;
@@ -63,7 +63,7 @@ function crearProducto() {
         return;
     }
 
-    fetch('http://localhost:3000/productos', {
+    fetch(`${window.location.origin}/api/productos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, presentacion, stock, precio_compra, precio_venta, id_categoria })
@@ -113,7 +113,7 @@ function actualizarProducto() {
         return;
     }
 
-    fetch(`http://localhost:3000/productos/${id}`, {
+    fetch(`${window.location.origin}/api/productos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, presentacion, precio_compra, precio_venta, stock, id_categoria })
@@ -133,7 +133,7 @@ function actualizarProducto() {
 function eliminar(id) {
     if (!confirm('¿Está seguro de eliminar este producto?')) return;
 
-    fetch(`http://localhost:3000/productos/${id}`, {
+    fetch(`${window.location.origin}/api/productos/${id}`, {
         method: 'DELETE'
     })
     .then(res => {
@@ -172,5 +172,10 @@ window.onclick = function(event) {
         cerrarModal();
     }
 };
+
+function cerrarSesion() {
+    sessionStorage.removeItem('empleado');
+    window.location.href = '../login/login.html';
+}
 
 cargarProductos();

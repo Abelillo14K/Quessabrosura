@@ -14,7 +14,7 @@ function getRoleClass(rol) {
 }
 
 function cargarEmpleados() {
-    fetch('http://localhost:3000/empleados')
+    fetch(`${window.location.origin}/api/empleados`)
         .then(res => res.json())
         .then(data => {
             empleados = data;
@@ -62,7 +62,7 @@ function crearEmpleado() {
         return;
     }
 
-    fetch('http://localhost:3000/empleados', {
+    fetch(`${window.location.origin}/api/empleados`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nombre, rol })
@@ -83,7 +83,7 @@ function crearEmpleado() {
 function eliminar(id) {
     if (!confirm('¿Está seguro de eliminar este empleado?')) return;
 
-    fetch(`http://localhost:3000/empleados/${id}`, {
+    fetch(`${window.location.origin}/api/empleados/${id}`, {
         method: 'DELETE'
     })
     .then(res => {
@@ -115,6 +115,11 @@ function mostrarMensaje(texto, tipo) {
     setTimeout(() => {
         mensaje.classList.remove('show');
     }, 3000);
+}
+
+function cerrarSesion() {
+    sessionStorage.removeItem('empleado');
+    window.location.href = '../login/login.html';
 }
 
 cargarEmpleados();
