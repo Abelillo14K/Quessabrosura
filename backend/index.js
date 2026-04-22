@@ -38,6 +38,9 @@ app.use('/api/gastos', gastosRoutes);
 const cortesRoutes = require('./routes/cortes');
 app.use('/api/cortes', cortesRoutes);
 
+const inventarioRoutes = require('./routes/inventario');
+app.use('/api/inventario', inventarioRoutes);
+
 // LOGIN (simple, sin seguridad)
 app.post('/api/login', async (req, res) => {
     const { usuario, password } = req.body;

@@ -18,6 +18,7 @@
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
       <li><a href="../compras/compras.html"><span class="icon">🛒</span>Compras</a></li>
       <li><a href="../productos/productos.html" class="active"><span class="icon">🥐</span>Productos</a></li>
+      <li><a href="../inventario/inventario.html"><span class="icon">📦</span>Inventario</a></li>
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
@@ -43,31 +44,12 @@
             <input type="text" id="nombre" placeholder="Nombre del producto" required>
           </div>
           <div class="form-group">
-            <label for="presentacion">Presentación</label>
-            <input type="text" id="presentacion" placeholder="ej: 500g, 1L">
-          </div>
-          <div class="form-group">
-            <label for="stock">Stock</label>
-            <input type="number" id="stock" placeholder="Cantidad" min="0">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="precio_compra">Precio Compra</label>
-            <input type="number" step="0.01" id="precio_compra" placeholder="Q0.00" min="0">
+            <label for="tipo">Tipo</label>
+            <input type="text" id="tipo" placeholder="ej: Pan, Bebida, Postre">
           </div>
           <div class="form-group">
             <label for="precio_venta">Precio Venta</label>
             <input type="number" step="0.01" id="precio_venta" placeholder="Q0.00" min="0">
-          </div>
-          <div class="form-group">
-            <label for="id_categoria">Categoría</label>
-            <select id="id_categoria">
-              <option value="1">Panadería</option>
-              <option value="2">Repostería</option>
-              <option value="3">Bebidas</option>
-              <option value="4">Snacks</option>
-            </select>
           </div>
         </div>
         <button type="button" class="btn-add" onclick="crearProducto()">➕ Agregar</button>
@@ -84,10 +66,9 @@
           <tr>
             <th>#</th>
             <th>Nombre</th>
-            <th>Presentación</th>
-            <th>P. Compra</th>
+            <th>Tipo</th>
             <th>P. Venta</th>
-            <th>Stock</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -111,31 +92,17 @@
           <input type="text" id="editNombre" required>
         </div>
         <div class="form-group">
-          <label for="editPresentacion">Presentación</label>
-          <input type="text" id="editPresentacion">
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label for="editPrecioCompra">Precio Compra</label>
-            <input type="number" step="0.01" id="editPrecioCompra" min="0">
-          </div>
-          <div class="form-group">
-            <label for="editPrecioVenta">Precio Venta</label>
-            <input type="number" step="0.01" id="editPrecioVenta" min="0">
-          </div>
+          <label for="editTipo">Tipo</label>
+          <input type="text" id="editTipo">
         </div>
         <div class="form-group">
-          <label for="editStock">Stock</label>
-          <input type="number" id="editStock" min="0">
+          <label for="editPrecioVenta">Precio Venta</label>
+          <input type="number" step="0.01" id="editPrecioVenta" min="0">
         </div>
         <div class="form-group">
-          <label for="editCategoria">Categoría</label>
-          <select id="editCategoria">
-            <option value="1">Panadería</option>
-            <option value="2">Repostería</option>
-            <option value="3">Bebidas</option>
-            <option value="4">Snacks</option>
-          </select>
+          <label for="editActivo">
+            <input type="checkbox" id="editActivo"> Activo
+          </label>
         </div>
         <div class="form-actions">
           <button type="button" class="btn-save" onclick="actualizarProducto()">💾 Guardar</button>

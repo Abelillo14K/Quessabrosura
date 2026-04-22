@@ -2,10 +2,12 @@ let productos = [];
 const tabla = document.getElementById('tabla');
 const mensaje = document.getElementById('mensaje');
 
-function getStockClass(stock) {
-    if (stock <= 0) return 'stock-agotado';
-    if (stock < 10) return 'stock-bajo';
-    return 'stock-normal';
+function getActivoClass(activo) {
+    return activo == 1 ? 'activo' : 'inactivo';
+}
+
+function getActivoTexto(activo) {
+    return activo == 1 ? 'Activo' : 'Inactivo';
 }
 
 function cargarProductos() {
@@ -24,7 +26,7 @@ function renderizarTabla(data) {
     if (data.length === 0) {
         tabla.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align: center; color: #999; font-style: italic; padding: 30px;">
+                <td colspan="6" style="text-align: center; color: #999; font-style: italic; padding: 30px;">
                     No hay productos registrados
                 </td>
             </tr>
@@ -37,12 +39,12 @@ function renderizarTabla(data) {
             <tr>
                 <td>${p.id_producto}</td>
                 <td><strong>${p.nombre}</strong></td>
-                <td>${p.presentacion || 'N/A'}</td>
-                <td>Q${p.precio_compra ? p.precio_compra.toFixed(2) : '0.00'}</td>
-                <td>Q${p.precio_venta ? p.precio_venta.toFixed(2) : '0.00'}</td>
-                <td><span class="stock-badge ${getStockClass(p.stock)}">${p.stock}</span></td>
+                <td>${p.tipo || 'N/A'}</td>
+                <td>Q${p.precio_venta ? parseFloat(p.precio_venta).toFixed(2) : '0.00'}</td>
+                <td><span class="stock-badge ${getActivoClass(p.activo)}">${getActivoTexto(p.activo)}</span></td>
                 <td>
                     <button class="btn-edit" onclick="abrirModal(${p.id_producto})">✏️ Editar</button>
+                    <button class="btn-toggle" onclick="toggleActivo(${p.id_producto}, ${p.activo})">${p.activo == 1 ? '❌ Desactivar' : '✅ Activar'}</button>
                     <button class="btn-delete" onclick="eliminar(${p.id_producto})">🗑️ Eliminar</button>
                 </td>
             </tr>
@@ -52,11 +54,9 @@ function renderizarTabla(data) {
 
 function crearProducto() {
     const nombre = document.getElementById('nombre').value.trim();
-    const presentacion = document.getElementById('presentacion').value.trim();
-    const stock = parseInt(document.getElementById('stock').value) || 0;
-    const precio_compra = parseFloat(document.getElementById('precio_compra').value) || 0;
+    const tipo = document.getElementById('tipo').value.trim();
     const precio_venta = parseFloat(document.getElementById('precio_venta').value) || 0;
-    const id_categoria = parseInt(document.getElementById('id_categoria').value) || 1;
+    const activo = 1;
 
     if (!nombre) {
         mostrarMensaje('Por favor ingrese el nombre del producto', 'error');
@@ -66,16 +66,13 @@ function crearProducto() {
     fetch(`${window.location.origin}/api/productos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, presentacion, stock, precio_compra, precio_venta, id_categoria })
+        body: JSON.stringify({ nombre, tipo, precio_venta, activo })
     })
-    .then(res => {
-        if (res.ok) {
-            document.getElementById('productoForm').reset();
-            cargarProductos();
-            mostrarMensaje('Producto agregado exitosamente', 'exito');
-        } else {
-            mostrarMensaje('Error al agregar producto', 'error');
-        }
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('productoForm').reset();
+        cargarProductos();
+        mostrarMensaje('Producto agregado exitosamente', 'exito');
     })
     .catch(err => mostrarMensaje('Error de conexión', 'error'));
 }
@@ -86,11 +83,9 @@ function abrirModal(id) {
 
     document.getElementById('editId').value = producto.id_producto;
     document.getElementById('editNombre').value = producto.nombre;
-    document.getElementById('editPresentacion').value = producto.presentacion || '';
-    document.getElementById('editPrecioCompra').value = producto.precio_compra || 0;
+    document.getElementById('editTipo').value = producto.tipo || '';
     document.getElementById('editPrecioVenta').value = producto.precio_venta || 0;
-    document.getElementById('editStock').value = producto.stock || 0;
-    document.getElementById('editCategoria').value = producto.id_categoria || 1;
+    document.getElementById('editActivo').checked = producto.activo == 1;
 
     document.getElementById('modalEditar').style.display = 'block';
 }
@@ -102,11 +97,9 @@ function cerrarModal() {
 function actualizarProducto() {
     const id = document.getElementById('editId').value;
     const nombre = document.getElementById('editNombre').value.trim();
-    const presentacion = document.getElementById('editPresentacion').value.trim();
-    const precio_compra = parseFloat(document.getElementById('editPrecioCompra').value) || 0;
+    const tipo = document.getElementById('editTipo').value.trim();
     const precio_venta = parseFloat(document.getElementById('editPrecioVenta').value) || 0;
-    const stock = parseInt(document.getElementById('editStock').value) || 0;
-    const id_categoria = parseInt(document.getElementById('editCategoria').value) || 1;
+    const activo = document.getElementById('editActivo').checked ? 1 : 0;
 
     if (!nombre) {
         mostrarMensaje('Por favor ingrese el nombre del producto', 'error');
@@ -116,16 +109,29 @@ function actualizarProducto() {
     fetch(`${window.location.origin}/api/productos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, presentacion, precio_compra, precio_venta, stock, id_categoria })
+        body: JSON.stringify({ nombre, tipo, precio_venta, activo })
     })
-    .then(res => {
-        if (res.ok) {
-            cerrarModal();
-            cargarProductos();
-            mostrarMensaje('Producto actualizado exitosamente', 'exito');
-        } else {
-            mostrarMensaje('Error al actualizar producto', 'error');
-        }
+    .then(res => res.json())
+    .then(data => {
+        cerrarModal();
+        cargarProductos();
+        mostrarMensaje('Producto actualizado exitosamente', 'exito');
+    })
+    .catch(err => mostrarMensaje('Error de conexión', 'error'));
+}
+
+function toggleActivo(id, activoActual) {
+    const nuevoActivo = activoActual == 1 ? 0 : 1;
+
+    fetch(`${window.location.origin}/api/productos/${id}/activo`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activo: nuevoActivo })
+    })
+    .then(res => res.json())
+    .then(data => {
+        cargarProductos();
+        mostrarMensaje(nuevoActivo == 1 ? 'Producto activado' : 'Producto desactivado', 'exito');
     })
     .catch(err => mostrarMensaje('Error de conexión', 'error'));
 }
@@ -136,13 +142,10 @@ function eliminar(id) {
     fetch(`${window.location.origin}/api/productos/${id}`, {
         method: 'DELETE'
     })
-    .then(res => {
-        if (res.ok) {
-            cargarProductos();
-            mostrarMensaje('Producto eliminado', 'exito');
-        } else {
-            mostrarMensaje('Error al eliminar', 'error');
-        }
+    .then(res => res.json())
+    .then(data => {
+        cargarProductos();
+        mostrarMensaje('Producto eliminado', 'exito');
     })
     .catch(err => mostrarMensaje('Error de conexión', 'error'));
 }
@@ -152,7 +155,7 @@ function buscarProducto() {
     
     const filtrados = productos.filter(p => 
         p.nombre.toLowerCase().includes(busqueda) ||
-        (p.presentacion && p.presentacion.toLowerCase().includes(busqueda))
+        (p.tipo && p.tipo.toLowerCase().includes(busqueda))
     );
     
     renderizarTabla(filtrados);

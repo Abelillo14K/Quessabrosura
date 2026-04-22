@@ -24,12 +24,12 @@ exports.obtenerProducto = async (req, res) => {
 };
 
 exports.crearProducto = async (req, res) => {
-    const { nombre, presentacion, precio_venta, precio_compra, stock, id_categoria } = req.body;
+    const { nombre, tipo, precio_venta, activo } = req.body;
 
     try {
         const [resultado] = await db.query(
-            'INSERT INTO producto (nombre, presentacion, precio_venta, precio_compra, stock, id_categoria) VALUES (?, ?, ?, ?, ?, ?)',
-            [nombre, presentacion, precio_venta, precio_compra, stock, id_categoria]
+            'INSERT INTO producto (nombre, tipo, precio_venta, activo) VALUES (?, ?, ?, ?)',
+            [nombre, tipo, precio_venta, activo !== undefined ? activo : 1]
         );
 
         res.json({ mensaje: 'Producto creado', id_producto: resultado.insertId });
@@ -40,14 +40,12 @@ exports.crearProducto = async (req, res) => {
 
 exports.actualizarProducto = async (req, res) => {
     const { id } = req.params;
-    const { nombre, presentacion, precio_venta, precio_compra, stock, id_categoria } = req.body;
+    const { nombre, tipo, precio_venta, activo } = req.body;
 
     try {
         await db.query(
-            `UPDATE producto 
-            SET nombre = ?, presentacion = ?, precio_venta = ?, precio_compra = ?, stock = ?, id_categoria = ?
-            WHERE id_producto = ?`,
-            [nombre, presentacion, precio_venta, precio_compra, stock, id_categoria, id]
+            'UPDATE producto SET nombre = ?, tipo = ?, precio_venta = ?, activo = ? WHERE id_producto = ?',
+            [nombre, tipo, precio_venta, activo, id]
         );
 
         res.json({ mensaje: 'Producto actualizado' });
@@ -67,17 +65,13 @@ exports.eliminarProducto = async (req, res) => {
     }
 };
 
-exports.actualizarStock = async (req, res) => {
+exports.actualizarActivo = async (req, res) => {
     const { id } = req.params;
-    const { cantidad } = req.body;
+    const { activo } = req.body;
 
     try {
-        await db.query(
-            'UPDATE producto SET stock = stock + ? WHERE id_producto = ?',
-            [cantidad, id]
-        );
-
-        res.json({ mensaje: 'Stock actualizado' });
+        await db.query('UPDATE producto SET activo = ? WHERE id_producto = ?', [activo, id]);
+        res.json({ mensaje: activo ? 'Producto activado' : 'Producto desactivado' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
