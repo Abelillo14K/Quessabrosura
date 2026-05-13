@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ventas - Quessabrosura</title>
+  <link rel="stylesheet" href="../base.css">
   <link rel="stylesheet" href="../menu.css">
   <link rel="stylesheet" href="ventas.css">
 </head>
@@ -29,15 +30,15 @@
 
   <header>
     <div class="header-content">
-      <h1>💰 Registro de Ventas</h1>
-      <p class="subtitle">Historial de transacciones</p>
+      <h1>Registro de Ventas</h1>
+      <p class="subtitle">Gestión de transacciones y punto de venta</p>
     </div>
   </header>
 
   <main>
     <section class="summary-section">
       <div class="summary-card">
-        <div class="summary-icon">💵</div>
+        <div class="summary-icon">💰</div>
         <div class="summary-info">
           <span class="summary-label">Ventas de Hoy</span>
           <span class="summary-value" id="ventasHoy">Q0.00</span>
@@ -46,27 +47,94 @@
       <div class="summary-card">
         <div class="summary-icon">📊</div>
         <div class="summary-info">
-          <span class="summary-label">Total Transacciones</span>
+          <span class="summary-label">Transacciones</span>
           <span class="summary-value" id="totalTransacciones">0</span>
         </div>
       </div>
       <div class="summary-card">
-        <div class="summary-icon">💳</div>
+        <div class="summary-icon">💵</div>
         <div class="summary-info">
           <span class="summary-label">Efectivo</span>
           <span class="summary-value" id="efectivoTotal">Q0.00</span>
         </div>
       </div>
       <div class="summary-card">
-        <div class="summary-icon">🏦</div>
+        <div class="summary-icon">💳</div>
         <div class="summary-info">
           <span class="summary-label">Tarjeta</span>
           <span class="summary-value" id="tarjetaTotal">Q0.00</span>
         </div>
       </div>
+      <div class="summary-card">
+        <div class="summary-icon">🏦</div>
+        <div class="summary-info">
+          <span class="summary-label">Transferencia</span>
+          <span class="summary-value" id="transferenciaTotal">Q0.00</span>
+        </div>
+      </div>
     </section>
 
-    <section class="filter-section">
+    <section class="form-section">
+      <h2>Nueva Venta</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="metodoPago">Método de Pago</label>
+          <select id="metodoPago" required>
+            <option value="">Seleccionar...</option>
+              <option value="efectivo">Efectivo</option>
+              <option value="transferencia">Transferencia</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="producto">Producto</label>
+          <select id="producto" required>
+            <option value="">Seleccionar producto...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="cantidad">Cantidad</label>
+          <input type="number" id="cantidad" placeholder="Cantidad" min="1" required>
+        </div>
+        <div class="form-group">
+          <label for="precio">Precio Unitario (Q)</label>
+          <input type="number" id="precio" placeholder="0.00" step="0.01" min="0" required>
+        </div>
+        <button type="button" class="btn-add" id="btnAgregar">Agregar</button>
+      </div>
+    </section>
+
+    <section class="list-section">
+      <h2>Items en Venta</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unit.</th>
+            <th>Subtotal</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="lista">
+          <tr class="empty-row"><td colspan="5">No hay productos agregados</td></tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="total-label">Total:</td>
+            <td colspan="2" class="total-value" id="totalCarrito">Q0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="actions">
+        <button class="btn-save" id="btnCobrar">Cobrar</button>
+        <button class="btn-clear" id="btnLimpiar">Limpiar</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Historial de Ventas</h2>
       <div class="filter-row">
         <div class="filter-group">
           <label for="fechaInicio">Desde</label>
@@ -80,39 +148,65 @@
           <label for="filtroMetodo">Método de Pago</label>
           <select id="filtroMetodo" onchange="filtrarVentas()">
             <option value="">Todos</option>
-            <option value="Efectivo">Efectivo</option>
-            <option value="Tarjeta">Tarjeta</option>
-            <option value="Transferencia">Transferencia</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia</option>
           </select>
         </div>
+        <div class="filter-group filter-search">
+          <label for="busqueda">Buscar</label>
+          <input type="text" id="busqueda" placeholder="#, empleado, método..." oninput="filtrarVentas()">
+        </div>
       </div>
-    </section>
-
-    <section class="table-section">
-      <h2>Detalle de Ventas</h2>
-      <table id="tablaVentas">
+      <table>
         <thead>
           <tr>
             <th># Venta</th>
             <th>Fecha</th>
             <th>Hora</th>
             <th>Total</th>
-            <th>Método de Pago</th>
+            <th>Método</th>
             <th>Empleado</th>
+            <th>Estado</th>
+            <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tabla">
-        </tbody>
+        <tbody id="tabla"></tbody>
       </table>
     </section>
   </main>
 
   <footer>
-    <p>Sistema Quessabrosura © 2026</p>
+    <p>Sistema Quessabrosura &copy; 2026</p>
   </footer>
 
-  <div id="mensaje" class="mensaje"></div>
+  <div id="modalDetalle" class="modal">
+    <div class="modal-content">
+      <h2 id="detalleTitulo">Detalle de Venta</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio Unit.</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody id="detalleBody"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="total-label">Total:</td>
+            <td class="total-value" id="detalleTotal">Q0.00</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" onclick="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
 
+  <div id="mensaje" class="mensaje"></div>
+  <script src="../shared.js"></script>
   <script src="ventas.js"></script>
 </body>
 </html>

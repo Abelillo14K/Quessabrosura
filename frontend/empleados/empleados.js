@@ -1,125 +1,142 @@
 let empleados = [];
 const tabla = document.getElementById('tabla');
-const mensaje = document.getElementById('mensaje');
 
 function getRoleClass(rol) {
     const roleMap = {
         'Cocinero': 'cocinero',
-        'Cajero': 'cajero',
         'Mesero': 'mesero',
-        'Gerente': 'gerente',
-        'Auxiliar': 'auxiliar'
+        'Cajero': 'cajero',
+        'Administrador': 'administrador'
     };
-    return roleMap[rol] || 'auxiliar';
+    return roleMap[rol] || '';
 }
 
-function cargarEmpleados() {
-    fetch(`${window.location.origin}/api/empleados`)
-        .then(res => res.json())
-        .then(data => {
-            empleados = data;
-            renderizarTabla(data);
-        });
+async function cargarEmpleados() {
+    try {
+        empleados = await apiFetch('/api/empleados');
+        renderizarTabla(empleados);
+    } catch (err) {
+        mostrarError(err.message);
+    }
 }
 
 function renderizarTabla(data) {
     tabla.innerHTML = '';
 
     if (data.length === 0) {
-        tabla.innerHTML = `
-            <tr>
-                <td colspan="5" style="text-align: center; color: #999; font-style: italic; padding: 30px;">
-                    No hay empleados registrados
-                </td>
-            </tr>
-        `;
+        tabla.innerHTML = '<tr><td colspan="6" class="empty-row">No hay empleados registrados</td></tr>';
         return;
     }
 
     data.forEach(emp => {
-        const fecha = emp.fecha_ingreso ? new Date(emp.fecha_ingreso).toLocaleDateString('es-GT') : 'N/A';
-        
+        const fecha = emp.fecha_ingreso ? formatearFecha(emp.fecha_ingreso) : 'N/A';
         tabla.innerHTML += `
             <tr>
                 <td>${emp.id_empleado}</td>
                 <td><strong>${emp.nombre}</strong></td>
+                <td>${emp.usuario}</td>
                 <td><span class="role-badge ${getRoleClass(emp.rol)}">${emp.rol}</span></td>
                 <td>${fecha}</td>
                 <td>
-                    <button class="btn-delete" onclick="eliminar(${emp.id_empleado})">🗑️ Eliminar</button>
+                    <button class="btn-edit" onclick="abrirModal(${emp.id_empleado})">Editar</button>
+                    <button class="btn-delete" onclick="eliminar(${emp.id_empleado})">Eliminar</button>
                 </td>
             </tr>
         `;
     });
 }
 
-function crearEmpleado() {
+async function crearEmpleado() {
     const nombre = document.getElementById('nombre').value.trim();
+    const usuario = document.getElementById('usuario').value.trim();
+    const password = document.getElementById('password').value;
     const rol = document.getElementById('rol').value;
 
-    if (!nombre || !rol) {
-        mostrarMensaje('Por favor complete todos los campos', 'error');
+    if (!nombre || !usuario || !password || !rol) {
+        mostrarError('Por favor complete todos los campos');
         return;
     }
 
-    fetch(`${window.location.origin}/api/empleados`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, rol })
-    })
-    .then(res => {
-        if (res.ok) {
-            document.getElementById('nombre').value = '';
-            document.getElementById('rol').value = '';
-            cargarEmpleados();
-            mostrarMensaje('Empleado agregado exitosamente', 'exito');
-        } else {
-            mostrarMensaje('Error al agregar empleado', 'error');
-        }
-    })
-    .catch(err => mostrarMensaje('Error de conexión', 'error'));
+    try {
+        const data = await apiFetch('/api/empleados', {
+            method: 'POST',
+            body: { nombre, usuario, password, rol }
+        });
+        document.getElementById('empleadoForm').reset();
+        await cargarEmpleados();
+        mostrarExito('Empleado agregado exitosamente');
+    } catch (err) {
+        mostrarError(err.message);
+    }
 }
 
-function eliminar(id) {
+function abrirModal(id) {
+    const empleado = empleados.find(e => e.id_empleado === id);
+    if (!empleado) return;
+
+    document.getElementById('editId').value = empleado.id_empleado;
+    document.getElementById('editNombre').value = empleado.nombre;
+    document.getElementById('editUsuario').value = empleado.usuario;
+    document.getElementById('editPassword').value = '';
+    document.getElementById('editRol').value = empleado.rol;
+
+    document.getElementById('modalEditar').style.display = 'block';
+}
+
+async function actualizarEmpleado() {
+    const id = document.getElementById('editId').value;
+    const nombre = document.getElementById('editNombre').value.trim();
+    const usuario = document.getElementById('editUsuario').value.trim();
+    const password = document.getElementById('editPassword').value;
+    const rol = document.getElementById('editRol').value;
+
+    if (!nombre || !usuario || !rol) {
+        mostrarError('Por favor complete nombre, usuario y rol');
+        return;
+    }
+
+    const body = { nombre, usuario, rol };
+    if (password) body.password = password;
+
+    try {
+        await apiFetch(`/api/empleados/${id}`, {
+            method: 'PUT',
+            body
+        });
+        cerrarModal();
+        await cargarEmpleados();
+        mostrarExito('Empleado actualizado exitosamente');
+    } catch (err) {
+        mostrarError(err.message);
+    }
+}
+
+async function eliminar(id) {
     if (!confirm('¿Está seguro de eliminar este empleado?')) return;
 
-    fetch(`${window.location.origin}/api/empleados/${id}`, {
-        method: 'DELETE'
-    })
-    .then(res => {
-        if (res.ok) {
-            cargarEmpleados();
-            mostrarMensaje('Empleado eliminado', 'exito');
-        } else {
-            mostrarMensaje('Error al eliminar', 'error');
-        }
-    })
-    .catch(err => mostrarMensaje('Error de conexión', 'error'));
+    try {
+        await apiFetch(`/api/empleados/${id}`, { method: 'DELETE' });
+        await cargarEmpleados();
+        mostrarExito('Empleado eliminado');
+    } catch (err) {
+        mostrarError(err.message);
+    }
 }
 
 function buscarEmpleado() {
     const busqueda = document.getElementById('busqueda').value.toLowerCase();
-    
-    const filtrados = empleados.filter(emp => 
+    const filtrados = empleados.filter(emp =>
         emp.nombre.toLowerCase().includes(busqueda) ||
+        emp.usuario.toLowerCase().includes(busqueda) ||
         emp.rol.toLowerCase().includes(busqueda)
     );
-    
     renderizarTabla(filtrados);
 }
 
-function mostrarMensaje(texto, tipo) {
-    mensaje.textContent = texto;
-    mensaje.className = `mensaje ${tipo} show`;
-    
-    setTimeout(() => {
-        mensaje.classList.remove('show');
-    }, 3000);
-}
+document.addEventListener('DOMContentLoaded', () => {
+    verificarSesion();
+    cargarEmpleados();
 
-function cerrarSesion() {
-    sessionStorage.removeItem('empleado');
-    window.location.href = '../login/login.html';
-}
-
-cargarEmpleados();
+    document.getElementById('btnAgregar').addEventListener('click', crearEmpleado);
+    document.getElementById('btnGuardar').addEventListener('click', actualizarEmpleado);
+});

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventario - Quessabrosura</title>
+  <link rel="stylesheet" href="../base.css">
   <link rel="stylesheet" href="../menu.css">
   <link rel="stylesheet" href="inventario.css">
 </head>
@@ -29,37 +30,39 @@
 
   <header>
     <div class="header-content">
-      <h1>📦 Control de Inventario</h1>
-      <p class="subtitle">Gestión de stock de productos</p>
+      <h1>Control de Inventario</h1>
+      <p class="subtitle">Gestión de stock y stock mínimo de productos</p>
     </div>
   </header>
 
   <main>
-    <section class="form-section">
+    <section>
       <h2>Agregar / Actualizar Stock</h2>
-      <form id="inventarioForm">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="producto">Producto</label>
-            <select id="producto" required>
-              <option value="">Seleccionar producto...</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="cantidad">Cantidad</label>
-            <input type="number" id="cantidad" placeholder="Cantidad en stock" min="0" required>
-          </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="producto">Producto</label>
+          <select id="producto" required>
+            <option value="">Seleccionar producto...</option>
+          </select>
         </div>
-        <button type="button" class="btn-add" onclick="guardarInventario()">➕ Guardar</button>
-      </form>
+        <div class="form-group">
+          <label for="stock">Stock</label>
+          <input type="number" id="stock" placeholder="Cantidad en stock" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="stock_minimo">Stock Mínimo</label>
+          <input type="number" id="stock_minimo" placeholder="Stock mínimo" min="0" value="5" required>
+        </div>
+      </div>
+      <button type="button" class="btn-add" id="btnGuardar">Guardar</button>
     </section>
 
-    <section class="list-section">
+    <section>
       <h2>Inventario Actual</h2>
       <div class="search-box">
-        <input type="text" id="busqueda" placeholder="🔍 Buscar..." oninput="buscarInventario()">
+        <input type="text" id="busqueda" placeholder="Buscar..." oninput="buscarInventario()">
       </div>
-      <table id="tablaInventario">
+      <table>
         <thead>
           <tr>
             <th>#</th>
@@ -67,35 +70,41 @@
             <th>Tipo</th>
             <th>P. Venta</th>
             <th>Stock</th>
+            <th>Stock Mín.</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tabla">
-        </tbody>
+        <tbody id="tabla"></tbody>
       </table>
     </section>
   </main>
 
   <footer>
-    <p>Sistema Quessabrosura © 2026</p>
+    <p>Sistema Quessabrosura &copy; 2026</p>
   </footer>
 
   <div id="modalEditar" class="modal">
     <div class="modal-content">
-      <h2>Ajustar Stock</h2>
+      <h2>Ajustar Inventario</h2>
       <input type="hidden" id="editId">
       <div class="form-group">
-        <label for="editCantidad">Cantidad</label>
-        <input type="number" id="editCantidad" min="0">
+        <label for="editStock">Stock</label>
+        <input type="number" id="editStock" min="0" required>
+      </div>
+      <div class="form-group">
+        <label for="editStockMinimo">Stock Mínimo</label>
+        <input type="number" id="editStockMinimo" min="0" required>
       </div>
       <div class="form-actions">
-        <button type="button" class="btn-save" onclick="ajustarInventario()">💾 Guardar</button>
+        <button type="button" class="btn-save" id="btnAjustar">Guardar</button>
         <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
       </div>
     </div>
   </div>
 
   <div id="mensaje" class="mensaje"></div>
+  <script src="../shared.js"></script>
   <script src="inventario.js"></script>
 </body>
 </html>

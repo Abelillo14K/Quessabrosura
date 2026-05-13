@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/productoController');
+const { verificarToken } = require('../middleware/auth');
+
+router.use(verificarToken);
 
 router.get('/', controller.obtenerProductos);
 router.get('/:id', controller.obtenerProducto);

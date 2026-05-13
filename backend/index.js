@@ -1,75 +1,145 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const db = require('./db');
+const bcrypt = require('bcryptjs');
+const { generarToken } = require('./middleware/auth');
+const { errorHandler } = require('./middleware/errorHandler');
 
-// Encontrar la ruta correcta del frontend
-let frontendPath = path.join(__dirname, '../frontend');
-if (!fs.existsSync(frontendPath)) {
-    frontendPath = path.join(__dirname, '../../frontend');
-}
-if (!fs.existsSync(frontendPath)) {
-    frontendPath = path.join(process.cwd(), 'frontend');
-}
+const frontendPath = (() => {
+    const candidates = [
+        path.join(__dirname, '../frontend'),
+        path.join(__dirname, '../../frontend'),
+        path.join(process.cwd(), 'frontend')
+    ];
+    for (const p of candidates) {
+        if (fs.existsSync(p)) return p;
+    }
+    return candidates[0];
+})();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json({ limit: '10mb' }));
 
-// RUTAS API - primero para evitar conflictos
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    message: { error: 'Demasiadas solicitudes, intente de nuevo más tarde' }
+});
+app.use('/api', limiter);
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: { error: 'Demasiados intentos de inicio de sesión' }
+});
+
 const empleadosRoutes = require('./routes/empleados');
-app.use('/api/empleados', empleadosRoutes);
-
 const comprasRoutes = require('./routes/compras');
-app.use('/api/compras', comprasRoutes);
-
 const ventasRoutes = require('./routes/ventas');
-app.use('/api/ventas', ventasRoutes);
-
 const productosRoutes = require('./routes/productos');
-app.use('/api/productos', productosRoutes);
-
 const gastosRoutes = require('./routes/gastos');
-app.use('/api/gastos', gastosRoutes);
-
 const cortesRoutes = require('./routes/cortes');
-app.use('/api/cortes', cortesRoutes);
-
 const inventarioRoutes = require('./routes/inventario');
+
+app.use('/api/empleados', empleadosRoutes);
+app.use('/api/compras', comprasRoutes);
+app.use('/api/ventas', ventasRoutes);
+app.use('/api/productos', productosRoutes);
+app.use('/api/gastos', gastosRoutes);
+app.use('/api/cortes', cortesRoutes);
 app.use('/api/inventario', inventarioRoutes);
 
-// LOGIN (simple, sin seguridad)
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
     const { usuario, password } = req.body;
+
+    if (!usuario || !password) {
+        return res.status(400).json({ success: false, error: 'Usuario y contraseña son requeridos' });
+    }
 
     try {
         const [rows] = await db.query(
-            'SELECT * FROM empleado WHERE nombre = ?',
+            'SELECT id_empleado, nombre, usuario, password, rol FROM empleado WHERE usuario = ?',
             [usuario]
         );
 
         if (rows.length === 0) {
-            return res.json({ success: false, error: 'Usuario no encontrado' });
+            return res.status(401).json({ success: false, error: 'Usuario o contraseña incorrectos' });
         }
 
-        res.json({ success: true, empleado: rows[0] });
+        const empleado = rows[0];
+        let passwordValida = false;
+
+        if (empleado.password && (empleado.password.startsWith('$2a$') || empleado.password.startsWith('$2b$') || empleado.password.startsWith('$2y$'))) {
+            passwordValida = await bcrypt.compare(password, empleado.password);
+        } else {
+            passwordValida = (password === empleado.password);
+            if (passwordValida) {
+                const hash = await bcrypt.hash(password, 10);
+                await db.query('UPDATE empleado SET password = ? WHERE id_empleado = ?', [hash, empleado.id_empleado]);
+            }
+        }
+
+        if (!passwordValida) {
+            return res.status(401).json({ success: false, error: 'Usuario o contraseña incorrectos' });
+        }
+
+        const token = generarToken(empleado);
+        res.json({
+            success: true,
+            empleado: {
+                id_empleado: empleado.id_empleado,
+                nombre: empleado.nombre,
+                usuario: empleado.usuario,
+                rol: empleado.rol
+            },
+            token
+        });
     } catch (error) {
-        res.json({ success: false, error: error.message });
+        console.error('Error en login:', error);
+        res.status(500).json({ success: false, error: 'Error del servidor' });
     }
 });
 
-// SERVIR FRONTEND - al final
 app.use(express.static(frontendPath));
 
-// Redirigir / a login
 app.get('/', (req, res) => {
     res.sendFile(path.join(frontendPath, 'login/login.html'));
 });
 
+app.get('/api/verificar', (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+        return res.json({ valido: false });
+    }
+
+    try {
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+        res.json({ valido: true, empleado: { id_empleado: decoded.id, nombre: decoded.nombre, usuario: decoded.usuario, rol: decoded.rol } });
+    } catch {
+        res.json({ valido: false });
+    }
+});
+
+app.use(errorHandler);
+
 app.listen(PORT, () => {
     console.log(`Frontend: ${frontendPath}`);
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
+    console.log(`Entorno: ${process.env.NODE_ENV || 'development'}`);
 });

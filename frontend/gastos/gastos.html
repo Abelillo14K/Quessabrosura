@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gastos - Quessabrosura</title>
+  <link rel="stylesheet" href="../base.css">
+  <link rel="stylesheet" href="../menu.css">
+  <link rel="stylesheet" href="gastos.css">
+</head>
+<body class="with-sidebar">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span>🥐</span>
+      <h2>Quessabrosura</h2>
+    </div>
+    <ul class="sidebar-menu">
+      <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
+      <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
+      <li><a href="../compras/compras.html"><span class="icon">🛒</span>Compras</a></li>
+      <li><a href="../productos/productos.html"><span class="icon">🥐</span>Productos</a></li>
+      <li><a href="../inventario/inventario.html"><span class="icon">📦</span>Inventario</a></li>
+      <li><a href="../gastos/gastos.html" class="active"><span class="icon">📊</span>Gastos</a></li>
+      <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <header>
+    <div class="header-content">
+      <h1>Registro de Gastos</h1>
+      <p class="subtitle">Control de egresos</p>
+    </div>
+  </header>
+
+  <main>
+    <section class="summary-section">
+      <div class="summary-card">
+        <div class="summary-icon">📅</div>
+        <div class="summary-info">
+          <span class="summary-label">Gastos de Hoy</span>
+          <span class="summary-value" id="gastosHoy">Q0.00</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">📆</div>
+        <div class="summary-info">
+          <span class="summary-label">Gastos del Mes</span>
+          <span class="summary-value" id="gastosMes">Q0.00</span>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">📋</div>
+        <div class="summary-info">
+          <span class="summary-label">Total Gastos</span>
+          <span class="summary-value" id="totalGastos">Q0.00</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Nuevo Gasto</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="descripcion">Descripción</label>
+          <input type="text" id="descripcion" placeholder="Describa el gasto" required>
+        </div>
+        <div class="form-group">
+          <label for="monto">Monto (Q)</label>
+          <input type="number" id="monto" placeholder="0.00" step="0.01" min="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="fechaGasto">Fecha</label>
+          <input type="date" id="fechaGasto">
+        </div>
+        <button type="button" class="btn-add" id="btnRegistrar">Registrar</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Historial de Gastos</h2>
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="fechaInicio">Desde</label>
+          <input type="date" id="fechaInicio" onchange="filtrarGastos()">
+        </div>
+        <div class="filter-group">
+          <label for="fechaFin">Hasta</label>
+          <input type="date" id="fechaFin" onchange="filtrarGastos()">
+        </div>
+        <div class="filter-group filter-search">
+          <label for="busqueda">Buscar</label>
+          <input type="text" id="busqueda" placeholder="descripción..." oninput="filtrarGastos()">
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha</th>
+            <th>Descripción</th>
+            <th>Monto</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tabla"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="total-label">Total Mostrado:</td>
+            <td class="total-value" id="totalMostrado">Q0.00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>Sistema Quessabrosura &copy; 2026</p>
+  </footer>
+
+  <div id="mensaje" class="mensaje"></div>
+  <script src="../shared.js"></script>
+  <script src="gastos.js"></script>
+</body>
+</html>
