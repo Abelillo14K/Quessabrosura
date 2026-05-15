@@ -14,6 +14,7 @@
       <span>🥐</span>
       <h2>Quessabrosura</h2>
     </div>
+
     <ul class="sidebar-menu">
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html" class="active"><span class="icon">💰</span>Ventas</a></li>
@@ -23,6 +24,7 @@
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
+
     <div class="sidebar-footer">
       <button onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
@@ -44,6 +46,7 @@
           <span class="summary-value" id="ventasHoy">Q0.00</span>
         </div>
       </div>
+
       <div class="summary-card">
         <div class="summary-icon">📊</div>
         <div class="summary-info">
@@ -51,6 +54,7 @@
           <span class="summary-value" id="totalTransacciones">0</span>
         </div>
       </div>
+
       <div class="summary-card">
         <div class="summary-icon">💵</div>
         <div class="summary-info">
@@ -58,13 +62,7 @@
           <span class="summary-value" id="efectivoTotal">Q0.00</span>
         </div>
       </div>
-      <div class="summary-card">
-        <div class="summary-icon">💳</div>
-        <div class="summary-info">
-          <span class="summary-label">Tarjeta</span>
-          <span class="summary-value" id="tarjetaTotal">Q0.00</span>
-        </div>
-      </div>
+
       <div class="summary-card">
         <div class="summary-icon">🏦</div>
         <div class="summary-info">
@@ -76,16 +74,18 @@
 
     <section class="form-section">
       <h2>Nueva Venta</h2>
+
       <div class="form-row">
         <div class="form-group">
           <label for="metodoPago">Método de Pago</label>
           <select id="metodoPago" required>
             <option value="">Seleccionar...</option>
-              <option value="efectivo">Efectivo</option>
-              <option value="transferencia">Transferencia</option>
+            <option value="efectivo">Efectivo</option>
+            <option value="transferencia">Transferencia</option>
           </select>
         </div>
       </div>
+
       <div class="form-row">
         <div class="form-group">
           <label for="producto">Producto</label>
@@ -93,20 +93,24 @@
             <option value="">Seleccionar producto...</option>
           </select>
         </div>
+
         <div class="form-group">
           <label for="cantidad">Cantidad</label>
           <input type="number" id="cantidad" placeholder="Cantidad" min="1" required>
         </div>
+
         <div class="form-group">
           <label for="precio">Precio Unitario (Q)</label>
           <input type="number" id="precio" placeholder="0.00" step="0.01" min="0" required>
         </div>
+
         <button type="button" class="btn-add" id="btnAgregar">Agregar</button>
       </div>
     </section>
 
     <section class="list-section">
       <h2>Items en Venta</h2>
+
       <table>
         <thead>
           <tr>
@@ -117,9 +121,13 @@
             <th>Acción</th>
           </tr>
         </thead>
+
         <tbody id="lista">
-          <tr class="empty-row"><td colspan="5">No hay productos agregados</td></tr>
+          <tr class="empty-row">
+            <td colspan="5">No hay productos agregados</td>
+          </tr>
         </tbody>
+
         <tfoot>
           <tr>
             <td colspan="3" class="total-label">Total:</td>
@@ -127,6 +135,7 @@
           </tr>
         </tfoot>
       </table>
+
       <div class="actions">
         <button class="btn-save" id="btnCobrar">Cobrar</button>
         <button class="btn-clear" id="btnLimpiar">Limpiar</button>
@@ -135,15 +144,18 @@
 
     <section>
       <h2>Historial de Ventas</h2>
+
       <div class="filter-row">
         <div class="filter-group">
           <label for="fechaInicio">Desde</label>
           <input type="date" id="fechaInicio" onchange="filtrarVentas()">
         </div>
+
         <div class="filter-group">
           <label for="fechaFin">Hasta</label>
           <input type="date" id="fechaFin" onchange="filtrarVentas()">
         </div>
+
         <div class="filter-group">
           <label for="filtroMetodo">Método de Pago</label>
           <select id="filtroMetodo" onchange="filtrarVentas()">
@@ -152,11 +164,13 @@
             <option value="transferencia">Transferencia</option>
           </select>
         </div>
+
         <div class="filter-group filter-search">
           <label for="busqueda">Buscar</label>
           <input type="text" id="busqueda" placeholder="#, empleado, método..." oninput="filtrarVentas()">
         </div>
       </div>
+
       <table>
         <thead>
           <tr>
@@ -170,7 +184,12 @@
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tabla"></tbody>
+
+        <tbody id="tabla">
+          <tr class="empty-row">
+            <td colspan="8">Cargando ventas...</td>
+          </tr>
+        </tbody>
       </table>
     </section>
   </main>
@@ -182,6 +201,7 @@
   <div id="modalDetalle" class="modal">
     <div class="modal-content">
       <h2 id="detalleTitulo">Detalle de Venta</h2>
+
       <table>
         <thead>
           <tr>
@@ -191,7 +211,9 @@
             <th>Subtotal</th>
           </tr>
         </thead>
+
         <tbody id="detalleBody"></tbody>
+
         <tfoot>
           <tr>
             <td colspan="3" class="total-label">Total:</td>
@@ -199,6 +221,7 @@
           </tr>
         </tfoot>
       </table>
+
       <div class="form-actions">
         <button type="button" class="btn-cancel" onclick="cerrarModal()">Cerrar</button>
       </div>
@@ -206,6 +229,7 @@
   </div>
 
   <div id="mensaje" class="mensaje"></div>
+
   <script src="../shared.js"></script>
   <script src="ventas.js"></script>
 </body>

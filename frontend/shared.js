@@ -2,17 +2,31 @@ const API_BASE = window.location.origin;
 
 function getEmpleadoSesion() {
     const data = sessionStorage.getItem('empleado');
-    return data ? JSON.parse(data) : null;
+
+    try {
+        return data ? JSON.parse(data) : null;
+    } catch (error) {
+        sessionStorage.removeItem('empleado');
+        return null;
+    }
 }
 
 function getToken() {
     return sessionStorage.getItem('token');
 }
 
-function getHeaders() {
-    const headers = { 'Content-Type': 'application/json' };
+function getHeaders(extraHeaders = {}) {
+    const headers = {
+        'Content-Type': 'application/json',
+        ...extraHeaders
+    };
+
     const token = getToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     return headers;
 }
 
@@ -23,8 +37,8 @@ function irAlLogin() {
 
 async function apiFetch(url, options = {}) {
     const config = {
-        headers: getHeaders(),
         ...options,
+        headers: getHeaders(options.headers || {})
     };
 
     if (config.body && typeof config.body === 'object') {
@@ -39,29 +53,47 @@ async function apiFetch(url, options = {}) {
             throw new Error('Sesión expirada. Redirigiendo al login...');
         }
 
-        const data = await response.json();
+        let data = null;
+
+        try {
+            data = await response.json();
+        } catch (error) {
+            data = {};
+        }
 
         if (!response.ok) {
             throw new Error(data.error || `Error ${response.status}`);
         }
 
         return data;
+
     } catch (error) {
-        if (error.message === 'Sesión expirada. Redirigiendo al login...') throw error;
+        if (error.message === 'Sesión expirada. Redirigiendo al login...') {
+            throw error;
+        }
+
         if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
             throw new Error('Error de conexión con el servidor');
         }
+
         throw error;
     }
 }
 
 function mostrarMensaje(texto, tipo) {
     const mensaje = document.getElementById('mensaje');
-    if (!mensaje) return;
+
+    if (!mensaje) {
+        alert(texto);
+        return;
+    }
 
     mensaje.textContent = texto;
     mensaje.className = `mensaje ${tipo} show`;
-    setTimeout(() => mensaje.classList.remove('show'), 3000);
+
+    setTimeout(() => {
+        mensaje.classList.remove('show');
+    }, 3000);
 }
 
 function mostrarError(texto) {
@@ -73,7 +105,9 @@ function mostrarExito(texto) {
 }
 
 function cerrarModal() {
-    document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.display = 'none';
+    });
 }
 
 function cerrarSesion() {
@@ -84,19 +118,33 @@ function cerrarSesion() {
 
 function verificarSesion() {
     const empleado = getEmpleadoSesion();
-    if (!empleado) {
+    const token = getToken();
+
+    if (!empleado || !token) {
         window.location.href = '../login/login.html';
         return null;
     }
+
     return empleado;
 }
 
 function formatearFecha(fecha) {
     if (!fecha) return '—';
-    const d = new Date(fecha);
+
+    const fechaTexto = String(fecha);
+    const d = new Date(fechaTexto);
+
+    if (isNaN(d.getTime())) {
+        return fechaTexto;
+    }
+
     return d.toLocaleDateString('es-GT', {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        ...(fecha.includes(' ') ? { hour: '2-digit', minute: '2-digit' } : {})
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        ...(fechaTexto.includes(' ') || fechaTexto.includes('T')
+            ? { hour: '2-digit', minute: '2-digit' }
+            : {})
     });
 }
 
@@ -106,6 +154,7 @@ function formatearMoneda(valor) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const empleado = verificarSesion();
+
     if (empleado) {
         document.querySelectorAll('.empleado-nombre').forEach(el => {
             el.textContent = empleado.nombre;

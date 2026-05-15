@@ -8,8 +8,15 @@
   letter-spacing: 0.3px;
 }
 
-.status-activa { background: #e8f5e9; color: #2e7d32; }
-.status-anulada { background: #ffebee; color: #c62828; }
+.status-activa {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-anulada {
+  background: #ffebee;
+  color: #c62828;
+}
 
 .row-anulada {
   opacity: 0.55;

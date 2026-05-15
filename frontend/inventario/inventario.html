@@ -14,6 +14,7 @@
       <span>🥐</span>
       <h2>Quessabrosura</h2>
     </div>
+
     <ul class="sidebar-menu">
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
@@ -23,6 +24,7 @@
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
+
     <div class="sidebar-footer">
       <button onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
@@ -38,6 +40,7 @@
   <main>
     <section>
       <h2>Agregar / Actualizar Stock</h2>
+
       <div class="form-row">
         <div class="form-group">
           <label for="producto">Producto</label>
@@ -45,23 +48,30 @@
             <option value="">Seleccionar producto...</option>
           </select>
         </div>
+
         <div class="form-group">
-          <label for="stock">Stock</label>
+          <label for="stock">Stock actual</label>
           <input type="number" id="stock" placeholder="Cantidad en stock" min="0" required>
         </div>
+
         <div class="form-group">
-          <label for="stock_minimo">Stock Mínimo</label>
+          <label for="stock_minimo">Stock mínimo</label>
           <input type="number" id="stock_minimo" placeholder="Stock mínimo" min="0" value="5" required>
         </div>
       </div>
-      <button type="button" class="btn-add" id="btnGuardar">Guardar</button>
+
+      <div class="actions">
+        <button type="button" class="btn-add" id="btnGuardar">Guardar Inventario</button>
+      </div>
     </section>
 
     <section>
       <h2>Inventario Actual</h2>
+
       <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Buscar..." oninput="buscarInventario()">
+        <input type="text" id="busqueda" placeholder="Buscar por producto o tipo..." oninput="buscarInventario()">
       </div>
+
       <table>
         <thead>
           <tr>
@@ -75,7 +85,12 @@
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tabla"></tbody>
+
+        <tbody id="tabla">
+          <tr class="empty-row">
+            <td colspan="8">Cargando inventario...</td>
+          </tr>
+        </tbody>
       </table>
     </section>
   </main>
@@ -87,15 +102,19 @@
   <div id="modalEditar" class="modal">
     <div class="modal-content">
       <h2>Ajustar Inventario</h2>
+
       <input type="hidden" id="editId">
+
       <div class="form-group">
-        <label for="editStock">Stock</label>
+        <label for="editStock">Stock actual</label>
         <input type="number" id="editStock" min="0" required>
       </div>
+
       <div class="form-group">
-        <label for="editStockMinimo">Stock Mínimo</label>
+        <label for="editStockMinimo">Stock mínimo</label>
         <input type="number" id="editStockMinimo" min="0" required>
       </div>
+
       <div class="form-actions">
         <button type="button" class="btn-save" id="btnAjustar">Guardar</button>
         <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
@@ -104,6 +123,7 @@
   </div>
 
   <div id="mensaje" class="mensaje"></div>
+
   <script src="../shared.js"></script>
   <script src="inventario.js"></script>
 </body>

@@ -14,6 +14,7 @@
       <span>🥐</span>
       <h2>Quessabrosura</h2>
     </div>
+
     <ul class="sidebar-menu">
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
@@ -23,6 +24,7 @@
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
+
     <div class="sidebar-footer">
       <button onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
@@ -38,35 +40,44 @@
   <main>
     <section>
       <h2>Nuevo Producto</h2>
+
       <div class="form-row">
         <div class="form-group">
           <label for="nombre">Nombre</label>
           <input type="text" id="nombre" placeholder="Nombre del producto" required>
         </div>
+
         <div class="form-group">
           <label for="tipo">Tipo</label>
           <select id="tipo" required>
             <option value="">Seleccione tipo</option>
-            <option value="Comida">Comida</option>
+            <option value="Taco">Taco</option>
+            <option value="Quesadilla">Quesadilla</option>
+            <option value="Burrito">Burrito</option>
             <option value="Bebida">Bebida</option>
-            <option value="Postre">Postre</option>
-            <option value="Snack">Snack</option>
+            <option value="Combo">Combo</option>
             <option value="Otro">Otro</option>
           </select>
         </div>
+
         <div class="form-group">
           <label for="precio_venta">Precio Venta (Q)</label>
           <input type="number" step="0.01" id="precio_venta" placeholder="0.00" min="0" required>
         </div>
       </div>
-      <button type="button" class="btn-add" id="btnAgregar">Agregar</button>
+
+      <div class="actions">
+        <button type="button" class="btn-add" id="btnAgregar">Agregar Producto</button>
+      </div>
     </section>
 
     <section>
       <h2>Lista de Productos</h2>
+
       <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Buscar producto..." oninput="buscarProducto()">
+        <input type="text" id="busqueda" placeholder="Buscar por nombre o tipo..." oninput="buscarProducto()">
       </div>
+
       <table>
         <thead>
           <tr>
@@ -74,11 +85,17 @@
             <th>Nombre</th>
             <th>Tipo</th>
             <th>Precio Venta</th>
+            <th>Stock</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tabla"></tbody>
+
+        <tbody id="tabla">
+          <tr class="empty-row">
+            <td colspan="7">Cargando productos...</td>
+          </tr>
+        </tbody>
       </table>
     </section>
   </main>
@@ -90,28 +107,38 @@
   <div id="modalEditar" class="modal">
     <div class="modal-content">
       <h2>Editar Producto</h2>
+
       <input type="hidden" id="editId">
+
       <div class="form-group">
         <label for="editNombre">Nombre</label>
         <input type="text" id="editNombre" required>
       </div>
+
       <div class="form-group">
         <label for="editTipo">Tipo</label>
         <select id="editTipo" required>
-          <option value="Comida">Comida</option>
+          <option value="Taco">Taco</option>
+          <option value="Quesadilla">Quesadilla</option>
+          <option value="Burrito">Burrito</option>
           <option value="Bebida">Bebida</option>
-          <option value="Postre">Postre</option>
-          <option value="Snack">Snack</option>
+          <option value="Combo">Combo</option>
           <option value="Otro">Otro</option>
         </select>
       </div>
+
       <div class="form-group">
         <label for="editPrecioVenta">Precio Venta (Q)</label>
         <input type="number" step="0.01" id="editPrecioVenta" min="0" required>
       </div>
+
       <div class="form-group">
-        <label><input type="checkbox" id="editActivo"> Activo</label>
+        <label>
+          <input type="checkbox" id="editActivo">
+          Producto activo
+        </label>
       </div>
+
       <div class="form-actions">
         <button type="button" class="btn-save" id="btnGuardar">Guardar</button>
         <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
@@ -120,6 +147,7 @@
   </div>
 
   <div id="mensaje" class="mensaje"></div>
+
   <script src="../shared.js"></script>
   <script src="productos.js"></script>
 </body>

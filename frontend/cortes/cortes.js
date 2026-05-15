@@ -1,6 +1,8 @@
 let cortes = [];
 let resumenDia = null;
+
 const tabla = document.getElementById('tabla');
+const btnRegistrar = document.getElementById('btnRegistrar');
 
 async function cargarResumen() {
     try {
@@ -12,52 +14,48 @@ async function cargarResumen() {
 }
 
 function actualizarResumenUI(data) {
-    const v = data.ventas;
-    const totalVentas = parseFloat(v.total_ventas);
-    const efectivo = parseFloat(v.efectivo);
-    const transferencia = parseFloat(v.transferencia);
-    const totalGastos = parseFloat(data.gastos);
+    const ventas = data.ventas || {};
+    const totalVentas = parseFloat(ventas.total_ventas || 0);
+    const efectivo = parseFloat(ventas.efectivo || 0);
+    const transferencia = parseFloat(ventas.transferencia || 0);
+    const cantidadVentas = ventas.cantidad_ventas || 0;
+    const totalGastos = parseFloat(data.gastos || 0);
     const tieneCorte = data.tiene_corte;
     const corte = data.corte;
 
     document.getElementById('totalVentas').textContent = formatearMoneda(totalVentas);
+
     document.getElementById('ventasDetalle').textContent =
-        `Efectivo: ${formatearMoneda(efectivo)} | Transferencia: ${formatearMoneda(transferencia)} (${v.cantidad_ventas} ventas)`;
+        `Efectivo: ${formatearMoneda(efectivo)} | Transferencia: ${formatearMoneda(transferencia)} (${cantidadVentas} ventas)`;
 
     document.getElementById('totalGastos').textContent = formatearMoneda(totalGastos);
 
+    const esperadoNeto = totalVentas - totalGastos;
+    document.getElementById('esperadoValor').textContent = formatearMoneda(esperadoNeto);
+
     const formSection = document.getElementById('formSection');
+    const salidaValor = document.getElementById('salidaValor');
+    const diferenciaValor = document.getElementById('diferenciaValor');
 
     if (tieneCorte && corte) {
-        document.getElementById('entradaValor').textContent = formatearMoneda(0);
-        document.getElementById('esperadoValor').textContent = formatearMoneda(totalVentas - totalGastos);
+        const totalEfectivo = parseFloat(corte.total_efectivo || 0);
+        const totalTransferencia = parseFloat(corte.total_transferencia || 0);
+        const totalGeneral = parseFloat(corte.total_general || 0);
 
-        const totalEfectivo = parseFloat(corte.total_efectivo);
-        const totalTransferencia = parseFloat(corte.total_transferencia);
-        const totalGeneral = parseFloat(corte.total_general);
+        salidaValor.textContent = formatearMoneda(totalGeneral);
 
-        document.getElementById('salidaValor').textContent = formatearMoneda(totalGeneral);
-        const difEfectivo = totalEfectivo - efectivo;
-        const difTransferencia = totalTransferencia - transferencia;
-        const difGeneral = totalGeneral - (totalVentas - totalGastos);
+        const diferenciaGeneral = totalGeneral - esperadoNeto;
 
-        let diffText = '';
-        if (difEfectivo !== 0 || difTransferencia !== 0) {
-            diffText = `Efectivo: ${difEfectivo >= 0 ? '+' : ''}${formatearMoneda(difEfectivo)} | Transferencia: ${difTransferencia >= 0 ? '+' : ''}${formatearMoneda(difTransferencia)}`;
-        }
-
-        const diffEl = document.getElementById('diferenciaValor');
-        diffEl.textContent = `${difGeneral >= 0 ? '+' : ''}${formatearMoneda(difGeneral)}`;
-        diffEl.className = `summary-value ${difGeneral === 0 ? '' : (difGeneral > 0 ? 'diff-positiva' : 'diff-negativa')}`;
+        diferenciaValor.textContent = `${diferenciaGeneral >= 0 ? '+' : ''}${formatearMoneda(diferenciaGeneral)}`;
+        diferenciaValor.className = `summary-value ${
+            diferenciaGeneral === 0 ? '' : diferenciaGeneral > 0 ? 'diff-positiva' : 'diff-negativa'
+        }`;
 
         formSection.style.display = 'none';
     } else {
-        document.getElementById('entradaValor').textContent = formatearMoneda(0);
-        document.getElementById('esperadoValor').textContent = formatearMoneda(totalVentas - totalGastos);
-        document.getElementById('salidaValor').textContent = 'Pendiente';
-        document.getElementById('diferenciaValor').textContent = 'Pendiente';
-        document.getElementById('diferenciaValor').className = 'summary-value';
-
+        salidaValor.textContent = 'Pendiente';
+        diferenciaValor.textContent = 'Pendiente';
+        diferenciaValor.className = 'summary-value';
         formSection.style.display = 'block';
     }
 }
@@ -67,6 +65,11 @@ async function cargarCortes() {
         cortes = await apiFetch('/api/cortes');
         aplicarFiltros();
     } catch (err) {
+        tabla.innerHTML = `
+            <tr class="empty-row">
+                <td colspan="7">No se pudo cargar el historial de cortes</td>
+            </tr>
+        `;
         mostrarError(err.message);
     }
 }
@@ -74,12 +77,27 @@ async function cargarCortes() {
 function aplicarFiltros() {
     const fechaInicio = document.getElementById('fechaInicio').value;
     const fechaFin = document.getElementById('fechaFin').value;
-    const busqueda = document.getElementById('busqueda').value.toLowerCase();
+    const busqueda = document.getElementById('busqueda').value.trim().toLowerCase();
 
     let filtradas = [...cortes];
 
-    if (fechaInicio) filtradas = filtradas.filter(c => c.fecha >= fechaInicio);
-    if (fechaFin) filtradas = filtradas.filter(c => c.fecha <= fechaFin);
+    if (fechaInicio) {
+        filtradas = filtradas.filter(corte => {
+            return String(corte.fecha).slice(0, 10) >= fechaInicio;
+        });
+    }
+
+    if (fechaFin) {
+        filtradas = filtradas.filter(corte => {
+            return String(corte.fecha).slice(0, 10) <= fechaFin;
+        });
+    }
+
+    if (busqueda) {
+        filtradas = filtradas.filter(corte => {
+            return String(corte.id_corte).includes(busqueda);
+        });
+    }
 
     renderizarTabla(filtradas);
 }
@@ -88,24 +106,39 @@ function renderizarTabla(data) {
     tabla.innerHTML = '';
 
     if (data.length === 0) {
-        tabla.innerHTML = '<tr class="empty-row"><td colspan="7">No hay cortes registrados</td></tr>';
+        tabla.innerHTML = `
+            <tr class="empty-row">
+                <td colspan="7">No hay cortes registrados</td>
+            </tr>
+        `;
         return;
     }
 
-    data.forEach(c => {
-        const efectivo = parseFloat(c.total_efectivo);
-        const transferencia = parseFloat(c.total_transferencia);
-        const general = parseFloat(c.total_general);
+    data.forEach(corte => {
+        const efectivo = parseFloat(corte.total_efectivo || 0);
+        const transferencia = parseFloat(corte.total_transferencia || 0);
+        const general = parseFloat(corte.total_general || 0);
+        const estaAnulado = corte.anulada == 1;
 
         tabla.innerHTML += `
-            <tr>
-                <td>${c.id_corte}</td>
-                <td>${c.fecha}</td>
+            <tr class="${estaAnulado ? 'row-anulada' : ''}">
+                <td>#${corte.id_corte}</td>
+                <td>${formatearFecha(corte.fecha)}</td>
                 <td>${formatearMoneda(efectivo)}</td>
                 <td>${formatearMoneda(transferencia)}</td>
                 <td>${formatearMoneda(general)}</td>
-                <td>—</td>
-                <td><button class="btn-delete" onclick="anularCorte(${c.id_corte})">Eliminar</button></td>
+                <td>
+                    <span class="status ${estaAnulado ? 'status-anulada' : 'status-activa'}">
+                        ${estaAnulado ? 'Anulado' : 'Activo'}
+                    </span>
+                </td>
+                <td>
+                    ${estaAnulado ? '—' : `
+                        <button class="btn-delete" onclick="anularCorte(${corte.id_corte})">
+                            Anular
+                        </button>
+                    `}
+                </td>
             </tr>
         `;
     });
@@ -116,8 +149,8 @@ function filtrarCortes() {
 }
 
 async function registrarCorte() {
-    const efectivoInput = parseFloat(document.getElementById('total_efectivo')?.value || 0);
-    const transferenciaInput = parseFloat(document.getElementById('total_transferencia')?.value || 0);
+    const efectivoInput = parseFloat(document.getElementById('total_efectivo').value || 0);
+    const transferenciaInput = parseFloat(document.getElementById('total_transferencia').value || 0);
 
     if (isNaN(efectivoInput) || efectivoInput < 0) {
         mostrarError('Ingrese un total en efectivo válido');
@@ -132,6 +165,9 @@ async function registrarCorte() {
     const totalGeneral = efectivoInput + transferenciaInput;
 
     try {
+        btnRegistrar.disabled = true;
+        btnRegistrar.textContent = 'Registrando...';
+
         const data = await apiFetch('/api/cortes', {
             method: 'POST',
             body: {
@@ -140,33 +176,52 @@ async function registrarCorte() {
                 total_general: totalGeneral
             }
         });
+
         document.getElementById('total_efectivo').value = '';
         document.getElementById('total_transferencia').value = '';
+
         await cargarResumen();
         await cargarCortes();
+
         mostrarExito(`Corte #${data.id_corte} registrado`);
+
     } catch (err) {
         mostrarError(err.message);
+    } finally {
+        btnRegistrar.disabled = false;
+        btnRegistrar.textContent = 'Registrar Corte';
     }
 }
 
 async function anularCorte(id) {
-    if (!confirm(`¿Eliminar el corte #${id}?`)) return;
+    if (!confirm(`¿Anular el corte #${id}?`)) {
+        return;
+    }
 
     try {
-        await apiFetch(`/api/cortes/${id}`, { method: 'DELETE' });
+        await apiFetch(`/api/cortes/${id}`, {
+            method: 'DELETE'
+        });
+
         await cargarCortes();
         await cargarResumen();
-        mostrarExito('Corte eliminado');
+
+        mostrarExito(`Corte #${id} anulado`);
+
     } catch (err) {
         mostrarError(err.message);
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    verificarSesion();
+    const empleado = verificarSesion();
+
+    if (!empleado) {
+        return;
+    }
+
     cargarResumen();
     cargarCortes();
 
-    document.getElementById('btnRegistrar').addEventListener('click', registrarCorte);
+    btnRegistrar.addEventListener('click', registrarCorte);
 });

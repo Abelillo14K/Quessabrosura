@@ -1,15 +1,17 @@
 .btn-toggle {
-    padding: 6px 14px;
-    background: #f39c12;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: background 0.2s;
-    margin-right: 5px;
+  padding: 6px 14px;
+  background: #f39c12;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  margin-right: 5px;
 }
 
 .btn-toggle:hover {
-    background: #d68910;
+  background: #d68910;
+  transform: translateY(-1px);
 }

@@ -14,6 +14,7 @@
       <span>🥐</span>
       <h2>Quessabrosura</h2>
     </div>
+
     <ul class="sidebar-menu">
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
@@ -23,6 +24,7 @@
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html" class="active"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
+
     <div class="sidebar-footer">
       <button onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
@@ -42,9 +44,10 @@
         <div class="summary-info">
           <span class="summary-label">Ventas del Día</span>
           <span class="summary-value" id="totalVentas">Q0.00</span>
-          <span class="summary-sub" id="ventasDetalle"></span>
+          <span class="summary-sub" id="ventasDetalle">Cargando...</span>
         </div>
       </div>
+
       <div class="summary-card summary-gastos">
         <div class="summary-icon">📊</div>
         <div class="summary-info">
@@ -52,56 +55,71 @@
           <span class="summary-value" id="totalGastos">Q0.00</span>
         </div>
       </div>
+
       <div class="summary-card summary-esperado">
         <div class="summary-icon">📋</div>
         <div class="summary-info">
-          <span class="summary-label">Esperado en Caja</span>
+          <span class="summary-label">Esperado Neto</span>
           <span class="summary-value" id="esperadoValor">Q0.00</span>
+          <span class="summary-sub">Ventas - gastos</span>
         </div>
       </div>
+
       <div class="summary-card summary-salida">
         <div class="summary-icon">📤</div>
         <div class="summary-info">
-          <span class="summary-label">Total Corte</span>
-          <span class="summary-value" id="salidaValor">—</span>
+          <span class="summary-label">Total Registrado</span>
+          <span class="summary-value" id="salidaValor">Pendiente</span>
         </div>
       </div>
+
       <div class="summary-card summary-diferencia">
         <div class="summary-icon">⚖️</div>
         <div class="summary-info">
           <span class="summary-label">Diferencia</span>
-          <span class="summary-value" id="diferenciaValor">—</span>
+          <span class="summary-value" id="diferenciaValor">Pendiente</span>
         </div>
       </div>
     </section>
 
     <section id="formSection">
       <h2 id="formTitle">Registrar Corte de Caja</h2>
+
       <div class="form-row">
         <div class="form-group">
-          <label for="total_efectivo">Total Efectivo</label>
+          <label for="total_efectivo">Total Efectivo Real</label>
           <input type="number" id="total_efectivo" placeholder="0.00" step="0.01" min="0" required>
         </div>
+
         <div class="form-group">
-          <label for="total_transferencia">Total Transferencia</label>
+          <label for="total_transferencia">Total Transferencia Real</label>
           <input type="number" id="total_transferencia" placeholder="0.00" step="0.01" min="0" required>
         </div>
+
         <button type="button" class="btn-add" id="btnRegistrar">Registrar Corte</button>
       </div>
     </section>
 
     <section>
       <h2>Historial de Cortes</h2>
+
       <div class="filter-row">
         <div class="filter-group">
           <label for="fechaInicio">Desde</label>
           <input type="date" id="fechaInicio" onchange="filtrarCortes()">
         </div>
+
         <div class="filter-group">
           <label for="fechaFin">Hasta</label>
           <input type="date" id="fechaFin" onchange="filtrarCortes()">
         </div>
+
+        <div class="filter-group filter-search">
+          <label for="busqueda">Buscar</label>
+          <input type="text" id="busqueda" placeholder="Buscar por # corte..." oninput="filtrarCortes()">
+        </div>
       </div>
+
       <table>
         <thead>
           <tr>
@@ -110,11 +128,16 @@
             <th>Efectivo</th>
             <th>Transferencia</th>
             <th>Total</th>
-            <th>Empleado</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tabla"></tbody>
+
+        <tbody id="tabla">
+          <tr class="empty-row">
+            <td colspan="7">Cargando cortes...</td>
+          </tr>
+        </tbody>
       </table>
     </section>
   </main>
@@ -124,6 +147,7 @@
   </footer>
 
   <div id="mensaje" class="mensaje"></div>
+
   <script src="../shared.js"></script>
   <script src="cortes.js"></script>
 </body>

@@ -33,9 +33,17 @@
   flex-shrink: 0;
 }
 
-.summary-card:nth-child(1) .summary-icon { background: #fff3e0; }
-.summary-card:nth-child(2) .summary-icon { background: #e8f5e9; }
-.summary-card:nth-child(3) .summary-icon { background: #e3f2fd; }
+.summary-card:nth-child(1) .summary-icon {
+  background: #fff3e0;
+}
+
+.summary-card:nth-child(2) .summary-icon {
+  background: #e8f5e9;
+}
+
+.summary-card:nth-child(3) .summary-icon {
+  background: #e3f2fd;
+}
 
 .summary-info {
   display: flex;
@@ -76,8 +84,15 @@
   letter-spacing: 0.3px;
 }
 
-.status-activo { background: #e8f5e9; color: #2e7d32; }
-.status-anulado { background: #ffebee; color: #c62828; }
+.status-activo {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-anulado {
+  background: #ffebee;
+  color: #c62828;
+}
 
 .row-anulada {
   opacity: 0.55;

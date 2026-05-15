@@ -15,28 +15,45 @@ async function iniciarSesion(e) {
 
     btnSubmit.disabled = true;
     btnText.textContent = 'Verificando...';
-    mensajeError.textContent = '';
+    ocultarError();
 
     try {
         const response = await fetch(`${window.location.origin}/api/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ usuario, password })
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                usuario,
+                password
+            })
         });
 
-        const data = await response.json();
+        let data = {};
 
-        if (data.success) {
-            sessionStorage.setItem('empleado', JSON.stringify(data.empleado));
-            if (data.token) {
-                sessionStorage.setItem('token', data.token);
-            }
-            window.location.href = '../empleados/empleados.html';
-        } else {
-            mostrarError(data.error || 'Credenciales incorrectas');
+        try {
+            data = await response.json();
+        } catch (error) {
+            data = {};
         }
+
+        if (!response.ok || !data.success) {
+            mostrarError(data.error || 'Credenciales incorrectas');
+            return;
+        }
+
+        if (!data.token || !data.empleado) {
+            mostrarError('Respuesta inválida del servidor');
+            return;
+        }
+
+        sessionStorage.setItem('empleado', JSON.stringify(data.empleado));
+        sessionStorage.setItem('token', data.token);
+
+        window.location.href = '../ventas/ventas.html';
+
     } catch (err) {
-        mostrarError('Error de conexión: ' + (err.message || 'intente de nuevo'));
+        mostrarError('Error de conexión. Verifique que el servidor esté encendido.');
     } finally {
         btnSubmit.disabled = false;
         btnText.textContent = 'Ingresar';
@@ -48,10 +65,17 @@ function mostrarError(mensaje) {
     mensajeError.style.display = 'block';
 }
 
+function ocultarError() {
+    mensajeError.textContent = '';
+    mensajeError.style.display = 'none';
+}
+
 function verificarSesion() {
     const empleado = sessionStorage.getItem('empleado');
-    if (empleado) {
-        window.location.href = '../empleados/empleados.html';
+    const token = sessionStorage.getItem('token');
+
+    if (empleado && token) {
+        window.location.href = '../ventas/ventas.html';
     }
 }
 

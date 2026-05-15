@@ -14,6 +14,7 @@
       <span>🥐</span>
       <h2>Quessabrosura</h2>
     </div>
+
     <ul class="sidebar-menu">
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
@@ -23,6 +24,7 @@
       <li><a href="../gastos/gastos.html" class="active"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
+
     <div class="sidebar-footer">
       <button onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
@@ -31,7 +33,7 @@
   <header>
     <div class="header-content">
       <h1>Registro de Gastos</h1>
-      <p class="subtitle">Control de egresos</p>
+      <p class="subtitle">Control de egresos del negocio</p>
     </div>
   </header>
 
@@ -44,6 +46,7 @@
           <span class="summary-value" id="gastosHoy">Q0.00</span>
         </div>
       </div>
+
       <div class="summary-card">
         <div class="summary-icon">📆</div>
         <div class="summary-info">
@@ -51,10 +54,11 @@
           <span class="summary-value" id="gastosMes">Q0.00</span>
         </div>
       </div>
+
       <div class="summary-card">
         <div class="summary-icon">📋</div>
         <div class="summary-info">
-          <span class="summary-label">Total Gastos</span>
+          <span class="summary-label">Total Activo</span>
           <span class="summary-value" id="totalGastos">Q0.00</span>
         </div>
       </div>
@@ -62,39 +66,47 @@
 
     <section>
       <h2>Nuevo Gasto</h2>
+
       <div class="form-row">
         <div class="form-group">
           <label for="descripcion">Descripción</label>
-          <input type="text" id="descripcion" placeholder="Describa el gasto" required>
+          <input type="text" id="descripcion" placeholder="Ej: gas, bolsas, servilletas..." required>
         </div>
+
         <div class="form-group">
           <label for="monto">Monto (Q)</label>
           <input type="number" id="monto" placeholder="0.00" step="0.01" min="0.01" required>
         </div>
+
         <div class="form-group">
           <label for="fechaGasto">Fecha</label>
           <input type="date" id="fechaGasto">
         </div>
+
         <button type="button" class="btn-add" id="btnRegistrar">Registrar</button>
       </div>
     </section>
 
     <section>
       <h2>Historial de Gastos</h2>
+
       <div class="filter-row">
         <div class="filter-group">
           <label for="fechaInicio">Desde</label>
           <input type="date" id="fechaInicio" onchange="filtrarGastos()">
         </div>
+
         <div class="filter-group">
           <label for="fechaFin">Hasta</label>
           <input type="date" id="fechaFin" onchange="filtrarGastos()">
         </div>
+
         <div class="filter-group filter-search">
           <label for="busqueda">Buscar</label>
-          <input type="text" id="busqueda" placeholder="descripción..." oninput="filtrarGastos()">
+          <input type="text" id="busqueda" placeholder="Buscar por descripción..." oninput="filtrarGastos()">
         </div>
       </div>
+
       <table>
         <thead>
           <tr>
@@ -102,15 +114,22 @@
             <th>Fecha</th>
             <th>Descripción</th>
             <th>Monto</th>
+            <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="tabla"></tbody>
+
+        <tbody id="tabla">
+          <tr class="empty-row">
+            <td colspan="6">Cargando gastos...</td>
+          </tr>
+        </tbody>
+
         <tfoot>
           <tr>
             <td colspan="3" class="total-label">Total Mostrado:</td>
             <td class="total-value" id="totalMostrado">Q0.00</td>
-            <td></td>
+            <td colspan="2"></td>
           </tr>
         </tfoot>
       </table>
@@ -122,6 +141,7 @@
   </footer>
 
   <div id="mensaje" class="mensaje"></div>
+
   <script src="../shared.js"></script>
   <script src="gastos.js"></script>
 </body>

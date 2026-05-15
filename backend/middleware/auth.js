@@ -5,19 +5,25 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
 
 function generarToken(empleado) {
     return jwt.sign(
-        { id: empleado.id_empleado, nombre: empleado.nombre, usuario: empleado.usuario, rol: empleado.rol },
+        {
+            id: empleado.id_empleado,
+            nombre: empleado.nombre,
+            usuario: empleado.usuario,
+            rol: empleado.rol
+        },
         JWT_SECRET,
         { expiresIn: '12h' }
     );
 }
 
 function verificarToken(req, res, next) {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const authHeader = req.headers.authorization;
 
-    if (!token) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: 'Token de autenticación requerido' });
     }
+
+    const token = authHeader.split(' ')[1];
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);
@@ -28,4 +34,14 @@ function verificarToken(req, res, next) {
     }
 }
 
-module.exports = { generarToken, verificarToken };
+function autorizarRoles(...rolesPermitidos) {
+    return (req, res, next) => {
+        if (!req.empleado || !rolesPermitidos.includes(req.empleado.rol)) {
+            return res.status(403).json({ error: 'No tiene permisos para realizar esta acción' });
+        }
+
+        next();
+    };
+}
+
+module.exports = { generarToken, verificarToken, autorizarRoles };

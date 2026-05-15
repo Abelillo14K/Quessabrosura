@@ -14,6 +14,7 @@
       <span>🥐</span>
       <h2>Quessabrosura</h2>
     </div>
+
     <ul class="sidebar-menu">
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
@@ -23,6 +24,7 @@
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
+
     <div class="sidebar-footer">
       <button onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
@@ -38,6 +40,7 @@
   <main>
     <section>
       <h2>Nueva Compra</h2>
+
       <div class="form-row">
         <div class="form-group">
           <label for="producto">Producto</label>
@@ -45,20 +48,24 @@
             <option value="">Seleccionar producto...</option>
           </select>
         </div>
+
         <div class="form-group">
           <label for="cantidad">Cantidad</label>
           <input type="number" id="cantidad" placeholder="Cantidad" min="1" required>
         </div>
+
         <div class="form-group">
-          <label for="precio">Precio Unitario (Q)</label>
+          <label for="precio">Precio de compra unitario (Q)</label>
           <input type="number" id="precio" placeholder="0.00" step="0.01" min="0" required>
         </div>
+
         <button type="button" class="btn-add" id="btnAgregar">Agregar</button>
       </div>
     </section>
 
     <section>
-      <h2>Items en Carrito</h2>
+      <h2>Productos en la compra</h2>
+
       <table>
         <thead>
           <tr>
@@ -69,9 +76,13 @@
             <th>Acción</th>
           </tr>
         </thead>
+
         <tbody id="lista">
-          <tr class="empty-row"><td colspan="5">No hay productos agregados</td></tr>
+          <tr class="empty-row">
+            <td colspan="5">No hay productos agregados</td>
+          </tr>
         </tbody>
+
         <tfoot>
           <tr>
             <td colspan="3" class="total-label">Total:</td>
@@ -79,6 +90,7 @@
           </tr>
         </tfoot>
       </table>
+
       <div class="actions">
         <button class="btn-save" id="btnGuardar">Guardar Compra</button>
         <button class="btn-clear" id="btnLimpiar">Limpiar</button>
@@ -87,21 +99,27 @@
 
     <section>
       <h2>Historial de Compras</h2>
+
       <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Buscar por #, empleado..." oninput="buscarHistorial()">
+        <input type="text" id="busqueda" placeholder="Buscar por número de compra..." oninput="buscarHistorial()">
       </div>
+
       <table>
         <thead>
           <tr>
             <th># Compra</th>
             <th>Fecha</th>
-            <th>Empleado</th>
             <th>Total</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
         </thead>
-        <tbody id="historial"></tbody>
+
+        <tbody id="historial">
+          <tr class="empty-row">
+            <td colspan="5">Cargando compras...</td>
+          </tr>
+        </tbody>
       </table>
     </section>
   </main>
@@ -113,6 +131,7 @@
   <div id="modalDetalle" class="modal">
     <div class="modal-content">
       <h2 id="detalleTitulo">Detalle de Compra</h2>
+
       <table>
         <thead>
           <tr>
@@ -122,7 +141,9 @@
             <th>Subtotal</th>
           </tr>
         </thead>
+
         <tbody id="detalleBody"></tbody>
+
         <tfoot>
           <tr>
             <td colspan="3" class="total-label">Total:</td>
@@ -130,6 +151,7 @@
           </tr>
         </tfoot>
       </table>
+
       <div class="form-actions">
         <button type="button" class="btn-cancel" onclick="cerrarModal()">Cerrar</button>
       </div>
@@ -137,6 +159,7 @@
   </div>
 
   <div id="mensaje" class="mensaje"></div>
+
   <script src="../shared.js"></script>
   <script src="compras.js"></script>
 </body>
