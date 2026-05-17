@@ -1,65 +1,42 @@
+let insumos = [];
 let filtroActual = '';
-let inventario = [];
 
 const tabla = document.getElementById('tabla');
+const btnAgregar = document.getElementById('btnAgregar');
 const btnGuardar = document.getElementById('btnGuardar');
-const btnAjustar = document.getElementById('btnAjustar');
+const btnGuardarStock = document.getElementById('btnGuardarStock');
 
-function getStockClass(stock, stockMinimo) {
-    const stockActual = Number(stock || 0);
-    const minimo = Number(stockMinimo || 0);
+function getEstadoClass(estado) {
+    const estadoNormalizado = String(estado || '').toLowerCase();
 
-    if (stockActual <= 0) {
+    if (estadoNormalizado === 'agotado') {
         return 'stock-agotado';
     }
 
-    if (minimo > 0 && stockActual <= minimo) {
+    if (estadoNormalizado === 'bajo') {
         return 'stock-bajo';
     }
 
     return 'stock-normal';
 }
 
-function getStockTexto(stock, stockMinimo) {
-    const stockActual = Number(stock || 0);
-    const minimo = Number(stockMinimo || 0);
+function getEstadoTexto(estado) {
+    const estadoNormalizado = String(estado || '').toLowerCase();
 
-    if (stockActual <= 0) {
+    if (estadoNormalizado === 'agotado') {
         return 'Agotado';
     }
 
-    if (minimo > 0 && stockActual <= minimo) {
+    if (estadoNormalizado === 'bajo') {
         return 'Stock Bajo';
     }
 
-    return 'Normal';
+    return 'Suficiente';
 }
 
-async function cargarProductos() {
+async function cargarInsumos() {
     try {
-        const data = await apiFetch('/api/productos');
-        const select = document.getElementById('producto');
-
-        select.innerHTML = '<option value="">Seleccionar producto...</option>';
-
-        data.forEach(producto => {
-            if (producto.activo != 0) {
-                select.innerHTML += `
-                    <option value="${producto.id_producto}">
-                        ${producto.nombre}
-                    </option>
-                `;
-            }
-        });
-
-    } catch (err) {
-        mostrarError(err.message);
-    }
-}
-
-async function cargarInventario() {
-    try {
-        inventario = await apiFetch('/api/inventario');
+        insumos = await apiFetch('/api/insumos');
         aplicarFiltro();
 
     } catch (err) {
@@ -78,64 +55,146 @@ function renderizarTabla(data) {
     if (!data || data.length === 0) {
         tabla.innerHTML = `
             <tr class="empty-row">
-                <td colspan="8">No hay productos en inventario</td>
+                <td colspan="8">No hay insumos registrados</td>
             </tr>
         `;
         return;
     }
 
-    data.forEach(producto => {
-        const stock = Number(producto.stock || 0);
-        const stockMinimo = Number(producto.stock_minimo || 0);
-        const claseStock = getStockClass(stock, stockMinimo);
+    data.forEach(insumo => {
+        const activo = insumo.activo == 1;
+        const estadoClass = getEstadoClass(insumo.estado_stock);
 
         tabla.innerHTML += `
-            <tr>
-                <td>${producto.id_producto}</td>
-                <td><strong>${producto.nombre}</strong></td>
-                <td>${producto.tipo || '—'}</td>
-                <td>${formatearMoneda(producto.precio_venta)}</td>
+            <tr class="${activo ? '' : 'row-inactivo'}">
+                <td>${insumo.id_insumo}</td>
+                <td><strong>${insumo.nombre}</strong></td>
+                <td>${insumo.unidad_medida}</td>
                 <td>
-                    <span class="stock-badge ${claseStock}">
-                        ${stock}
+                    <span class="stock-badge ${estadoClass}">
+                        ${Number(insumo.stock || 0).toFixed(2)}
                     </span>
                 </td>
-                <td>${stockMinimo}</td>
+                <td>${Number(insumo.stock_minimo || 0).toFixed(2)}</td>
+                <td>${formatearMoneda(insumo.costo_unitario)}</td>
                 <td>
-                    <span class="stock-badge ${claseStock}">
-                        ${getStockTexto(stock, stockMinimo)}
+                    <span class="stock-badge ${estadoClass}">
+                        ${getEstadoTexto(insumo.estado_stock)}
                     </span>
                 </td>
                 <td>
-                    <button class="btn-edit" onclick="abrirModal(${producto.id_producto})">
-                        Ajustar
+                    <button class="btn-edit" onclick="abrirModalEditar(${insumo.id_insumo})">
+                        Editar
                     </button>
-                    <button class="btn-delete" onclick="eliminar(${producto.id_producto})">
-                        Quitar
+
+                    <button class="btn-toggle" onclick="abrirModalStock(${insumo.id_insumo})">
+                        Stock
                     </button>
+
+                    ${activo ? `
+                        <button class="btn-delete" onclick="desactivarInsumo(${insumo.id_insumo})">
+                            Desactivar
+                        </button>
+                    ` : ''}
                 </td>
             </tr>
         `;
     });
 }
 
-async function guardarInventario() {
-    const idProducto = parseInt(document.getElementById('producto').value);
-    const stock = parseInt(document.getElementById('stock').value);
-    const stockMinimo = parseInt(document.getElementById('stock_minimo').value);
+async function crearInsumo() {
+    const nombre = document.getElementById('nombre').value.trim();
+    const unidad_medida = document.getElementById('unidad_medida').value;
+    const stock = parseFloat(document.getElementById('stock').value || 0);
+    const stock_minimo = parseFloat(document.getElementById('stock_minimo').value || 0);
+    const costo_unitario = parseFloat(document.getElementById('costo_unitario').value || 0);
 
-    if (!idProducto) {
-        mostrarError('Seleccione un producto');
+    if (!nombre) {
+        mostrarError('Ingrese el nombre del insumo');
         return;
     }
 
-    if (isNaN(stock) || stock < 0) {
-        mostrarError('Ingrese un stock válido');
+    if (!unidad_medida) {
+        mostrarError('Seleccione una unidad de medida');
         return;
     }
 
-    if (isNaN(stockMinimo) || stockMinimo < 0) {
-        mostrarError('Ingrese un stock mínimo válido');
+    if (stock < 0 || stock_minimo < 0 || costo_unitario < 0) {
+        mostrarError('Los valores numéricos no pueden ser negativos');
+        return;
+    }
+
+    try {
+        btnAgregar.disabled = true;
+        btnAgregar.textContent = 'Guardando...';
+
+        await apiFetch('/api/insumos', {
+            method: 'POST',
+            body: {
+                nombre,
+                unidad_medida,
+                stock,
+                stock_minimo,
+                costo_unitario
+            }
+        });
+
+        document.getElementById('nombre').value = '';
+        document.getElementById('unidad_medida').value = '';
+        document.getElementById('stock').value = '';
+        document.getElementById('stock_minimo').value = '';
+        document.getElementById('costo_unitario').value = '';
+
+        await cargarInsumos();
+
+        mostrarExito('Insumo agregado exitosamente');
+
+    } catch (err) {
+        mostrarError(err.message);
+    } finally {
+        btnAgregar.disabled = false;
+        btnAgregar.textContent = 'Agregar Insumo';
+    }
+}
+
+function abrirModalEditar(id) {
+    const insumo = insumos.find(i => Number(i.id_insumo) === Number(id));
+
+    if (!insumo) {
+        mostrarError('Insumo no encontrado');
+        return;
+    }
+
+    document.getElementById('editId').value = insumo.id_insumo;
+    document.getElementById('editNombre').value = insumo.nombre || '';
+    document.getElementById('editUnidad').value = insumo.unidad_medida || 'unidad';
+    document.getElementById('editStockMinimo').value = insumo.stock_minimo || 0;
+    document.getElementById('editCosto').value = insumo.costo_unitario || 0;
+    document.getElementById('editActivo').checked = insumo.activo == 1;
+
+    document.getElementById('modalEditar').style.display = 'block';
+}
+
+async function actualizarInsumo() {
+    const id = document.getElementById('editId').value;
+    const nombre = document.getElementById('editNombre').value.trim();
+    const unidad_medida = document.getElementById('editUnidad').value;
+    const stock_minimo = parseFloat(document.getElementById('editStockMinimo').value || 0);
+    const costo_unitario = parseFloat(document.getElementById('editCosto').value || 0);
+    const activo = document.getElementById('editActivo').checked ? 1 : 0;
+
+    if (!nombre) {
+        mostrarError('Ingrese el nombre del insumo');
+        return;
+    }
+
+    if (!unidad_medida) {
+        mostrarError('Seleccione una unidad de medida');
+        return;
+    }
+
+    if (stock_minimo < 0 || costo_unitario < 0) {
+        mostrarError('Los valores numéricos no pueden ser negativos');
         return;
     }
 
@@ -143,121 +202,130 @@ async function guardarInventario() {
         btnGuardar.disabled = true;
         btnGuardar.textContent = 'Guardando...';
 
-        const data = await apiFetch('/api/inventario', {
-            method: 'POST',
+        await apiFetch(`/api/insumos/${id}`, {
+            method: 'PUT',
             body: {
-                id_producto: idProducto,
-                stock,
-                stock_minimo: stockMinimo
+                nombre,
+                unidad_medida,
+                stock_minimo,
+                costo_unitario,
+                activo
             }
         });
 
-        document.getElementById('producto').value = '';
-        document.getElementById('stock').value = '';
-        document.getElementById('stock_minimo').value = 5;
+        cerrarModal();
+        await cargarInsumos();
 
-        await cargarInventario();
-        await cargarProductos();
-
-        mostrarExito(data.mensaje || 'Inventario guardado');
+        mostrarExito('Insumo actualizado exitosamente');
 
     } catch (err) {
         mostrarError(err.message);
     } finally {
         btnGuardar.disabled = false;
-        btnGuardar.textContent = 'Guardar Inventario';
+        btnGuardar.textContent = 'Guardar';
     }
 }
 
-function abrirModal(id) {
-    const producto = inventario.find(p => Number(p.id_producto) === Number(id));
+function abrirModalStock(id) {
+    const insumo = insumos.find(i => Number(i.id_insumo) === Number(id));
 
-    if (!producto) {
-        mostrarError('Producto no encontrado en inventario');
+    if (!insumo) {
+        mostrarError('Insumo no encontrado');
         return;
     }
 
-    document.getElementById('editId').value = id;
-    document.getElementById('editStock').value = producto.stock || 0;
-    document.getElementById('editStockMinimo').value = producto.stock_minimo || 0;
+    document.getElementById('stockId').value = insumo.id_insumo;
+    document.getElementById('stockNombre').textContent =
+        `${insumo.nombre} | Stock actual: ${Number(insumo.stock || 0).toFixed(2)} ${insumo.unidad_medida}`;
 
-    document.getElementById('modalEditar').style.display = 'block';
+    document.getElementById('tipoMovimiento').value = 'entrada';
+    document.getElementById('cantidadMovimiento').value = '';
+    document.getElementById('motivoMovimiento').value = '';
+
+    document.getElementById('modalStock').style.display = 'block';
 }
 
-async function ajustarInventario() {
-    const idProducto = document.getElementById('editId').value;
-    const stock = parseInt(document.getElementById('editStock').value);
-    const stockMinimo = parseInt(document.getElementById('editStockMinimo').value);
+async function guardarMovimientoStock() {
+    const id = document.getElementById('stockId').value;
+    const tipo_movimiento = document.getElementById('tipoMovimiento').value;
+    const cantidad = parseFloat(document.getElementById('cantidadMovimiento').value);
+    const motivo = document.getElementById('motivoMovimiento').value.trim();
 
-    if (isNaN(stock) || stock < 0) {
-        mostrarError('Ingrese un stock válido');
+    if (!tipo_movimiento) {
+        mostrarError('Seleccione un tipo de movimiento');
         return;
     }
 
-    if (isNaN(stockMinimo) || stockMinimo < 0) {
-        mostrarError('Ingrese un stock mínimo válido');
+    if (isNaN(cantidad) || cantidad < 0) {
+        mostrarError('Ingrese una cantidad válida');
+        return;
+    }
+
+    if ((tipo_movimiento === 'entrada' || tipo_movimiento === 'salida') && cantidad <= 0) {
+        mostrarError('La cantidad debe ser mayor a 0');
         return;
     }
 
     try {
-        btnAjustar.disabled = true;
-        btnAjustar.textContent = 'Guardando...';
+        btnGuardarStock.disabled = true;
+        btnGuardarStock.textContent = 'Guardando...';
 
-        await apiFetch(`/api/inventario/${idProducto}`, {
-            method: 'PUT',
+        await apiFetch(`/api/insumos/${id}/stock`, {
+            method: 'PATCH',
             body: {
-                stock,
-                stock_minimo: stockMinimo
+                tipo_movimiento,
+                cantidad,
+                motivo
             }
         });
 
         cerrarModal();
+        await cargarInsumos();
 
-        await cargarInventario();
-
-        mostrarExito('Inventario actualizado');
+        mostrarExito('Stock actualizado exitosamente');
 
     } catch (err) {
         mostrarError(err.message);
     } finally {
-        btnAjustar.disabled = false;
-        btnAjustar.textContent = 'Guardar';
+        btnGuardarStock.disabled = false;
+        btnGuardarStock.textContent = 'Guardar Movimiento';
     }
 }
 
-async function eliminar(id) {
-    if (!confirm('¿Está seguro de quitar este producto del inventario? El producto no se eliminará del catálogo.')) {
+async function desactivarInsumo(id) {
+    if (!confirm('¿Desea desactivar este insumo?')) {
         return;
     }
 
     try {
-        await apiFetch(`/api/inventario/${id}`, {
+        await apiFetch(`/api/insumos/${id}`, {
             method: 'DELETE'
         });
 
-        await cargarInventario();
+        await cargarInsumos();
 
-        mostrarExito('Producto quitado del inventario');
+        mostrarExito('Insumo desactivado');
 
     } catch (err) {
         mostrarError(err.message);
     }
 }
 
-function buscarInventario() {
+function buscarInsumo() {
     filtroActual = document.getElementById('busqueda').value.trim().toLowerCase();
     aplicarFiltro();
 }
 
 function aplicarFiltro() {
     if (!filtroActual) {
-        renderizarTabla(inventario);
+        renderizarTabla(insumos);
         return;
     }
 
-    const filtrados = inventario.filter(producto => {
-        return String(producto.nombre || '').toLowerCase().includes(filtroActual) ||
-               String(producto.tipo || '').toLowerCase().includes(filtroActual);
+    const filtrados = insumos.filter(insumo => {
+        return String(insumo.nombre || '').toLowerCase().includes(filtroActual) ||
+               String(insumo.unidad_medida || '').toLowerCase().includes(filtroActual) ||
+               String(insumo.estado_stock || '').toLowerCase().includes(filtroActual);
     });
 
     renderizarTabla(filtrados);
@@ -270,9 +338,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    cargarProductos();
-    cargarInventario();
+    cargarInsumos();
 
-    btnGuardar.addEventListener('click', guardarInventario);
-    btnAjustar.addEventListener('click', ajustarInventario);
+    btnAgregar.addEventListener('click', crearInsumo);
+    btnGuardar.addEventListener('click', actualizarInsumo);
+    btnGuardarStock.addEventListener('click', guardarMovimientoStock);
 });

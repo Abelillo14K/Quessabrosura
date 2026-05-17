@@ -11,7 +11,7 @@
 <body class="with-sidebar">
   <nav class="sidebar">
     <div class="sidebar-logo">
-      <span>🥐</span>
+      <span>🌮</span>
       <h2>Quessabrosura</h2>
     </div>
 
@@ -19,8 +19,10 @@
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
       <li><a href="../compras/compras.html"><span class="icon">🛒</span>Compras</a></li>
-      <li><a href="../productos/productos.html"><span class="icon">🥐</span>Productos</a></li>
+      <li><a href="../productos/productos.html"><span class="icon">🌮</span>Productos</a></li>
       <li><a href="../inventario/inventario.html" class="active"><span class="icon">📦</span>Inventario</a></li>
+      <li><a href="../recetas/recetas.html"><span class="icon">📋</span>Recetas</a></li>
+      <li><a href="../proveedores/proveedores.html"><span class="icon">🚚</span>Proveedores</a></li>
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
@@ -32,36 +34,53 @@
 
   <header>
     <div class="header-content">
-      <h1>Control de Inventario</h1>
-      <p class="subtitle">Gestión de stock y stock mínimo de productos</p>
+      <h1>Inventario de Insumos</h1>
+      <p class="subtitle">Materia prima y productos físicos disponibles en el local</p>
     </div>
   </header>
 
   <main>
     <section>
-      <h2>Agregar / Actualizar Stock</h2>
+      <h2>Nuevo Insumo</h2>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="producto">Producto</label>
-          <select id="producto" required>
-            <option value="">Seleccionar producto...</option>
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" placeholder="Ej: Tortillas, Pollo, Gaseosa" required>
+        </div>
+
+        <div class="form-group">
+          <label for="unidad_medida">Unidad de medida</label>
+          <select id="unidad_medida" required>
+            <option value="">Seleccione unidad</option>
+            <option value="unidad">Unidad</option>
+            <option value="libra">Libra</option>
+            <option value="litro">Litro</option>
+            <option value="paquete">Paquete</option>
+            <option value="caja">Caja</option>
+            <option value="bolsa">Bolsa</option>
+            <option value="botella">Botella</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="stock">Stock actual</label>
-          <input type="number" id="stock" placeholder="Cantidad en stock" min="0" required>
+          <label for="stock">Stock inicial</label>
+          <input type="number" id="stock" step="0.01" min="0" placeholder="0.00">
         </div>
 
         <div class="form-group">
           <label for="stock_minimo">Stock mínimo</label>
-          <input type="number" id="stock_minimo" placeholder="Stock mínimo" min="0" value="5" required>
+          <input type="number" id="stock_minimo" step="0.01" min="0" placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <label for="costo_unitario">Costo unitario (Q)</label>
+          <input type="number" id="costo_unitario" step="0.01" min="0" placeholder="0.00">
         </div>
       </div>
 
       <div class="actions">
-        <button type="button" class="btn-add" id="btnGuardar">Guardar Inventario</button>
+        <button type="button" class="btn-add" id="btnAgregar">Agregar Insumo</button>
       </div>
     </section>
 
@@ -69,18 +88,18 @@
       <h2>Inventario Actual</h2>
 
       <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Buscar por producto o tipo..." oninput="buscarInventario()">
+        <input type="text" id="busqueda" placeholder="Buscar insumo..." oninput="buscarInsumo()">
       </div>
 
       <table>
         <thead>
           <tr>
             <th>#</th>
-            <th>Producto</th>
-            <th>Tipo</th>
-            <th>P. Venta</th>
+            <th>Insumo</th>
+            <th>Unidad</th>
             <th>Stock</th>
             <th>Stock Mín.</th>
+            <th>Costo Unit.</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -101,22 +120,81 @@
 
   <div id="modalEditar" class="modal">
     <div class="modal-content">
-      <h2>Ajustar Inventario</h2>
+      <h2>Editar Insumo</h2>
 
       <input type="hidden" id="editId">
 
       <div class="form-group">
-        <label for="editStock">Stock actual</label>
-        <input type="number" id="editStock" min="0" required>
+        <label for="editNombre">Nombre</label>
+        <input type="text" id="editNombre" required>
+      </div>
+
+      <div class="form-group">
+        <label for="editUnidad">Unidad de medida</label>
+        <select id="editUnidad" required>
+          <option value="unidad">Unidad</option>
+          <option value="libra">Libra</option>
+          <option value="litro">Litro</option>
+          <option value="paquete">Paquete</option>
+          <option value="caja">Caja</option>
+          <option value="bolsa">Bolsa</option>
+          <option value="botella">Botella</option>
+        </select>
       </div>
 
       <div class="form-group">
         <label for="editStockMinimo">Stock mínimo</label>
-        <input type="number" id="editStockMinimo" min="0" required>
+        <input type="number" id="editStockMinimo" step="0.01" min="0" required>
+      </div>
+
+      <div class="form-group">
+        <label for="editCosto">Costo unitario (Q)</label>
+        <input type="number" id="editCosto" step="0.01" min="0" required>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="editActivo">
+          Insumo activo
+        </label>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="btn-save" id="btnAjustar">Guardar</button>
+        <button type="button" class="btn-save" id="btnGuardar">Guardar</button>
+        <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalStock" class="modal">
+    <div class="modal-content">
+      <h2>Ajustar Stock</h2>
+
+      <input type="hidden" id="stockId">
+
+      <p id="stockNombre" class="stock-title"></p>
+
+      <div class="form-group">
+        <label for="tipoMovimiento">Tipo de movimiento</label>
+        <select id="tipoMovimiento" required>
+          <option value="entrada">Entrada</option>
+          <option value="salida">Salida</option>
+          <option value="ajuste">Ajuste exacto</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="cantidadMovimiento">Cantidad</label>
+        <input type="number" id="cantidadMovimiento" step="0.01" min="0" required>
+      </div>
+
+      <div class="form-group">
+        <label for="motivoMovimiento">Motivo</label>
+        <input type="text" id="motivoMovimiento" placeholder="Ej: ajuste manual, merma, conteo físico">
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-save" id="btnGuardarStock">Guardar Movimiento</button>
         <button type="button" class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
       </div>
     </div>

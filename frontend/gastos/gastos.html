@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gastos - Quessabrosura</title>
-  <link rel="stylesheet" href="../base.css">
-  <link rel="stylesheet" href="../menu.css">
+  <link rel="stylesheet" href="/base.css">
+  <link rel="stylesheet" href="/menu.css">
   <link rel="stylesheet" href="gastos.css">
 </head>
 <body class="with-sidebar">
   <nav class="sidebar">
     <div class="sidebar-logo">
-      <span>🥐</span>
+      <span>🌮</span>
       <h2>Quessabrosura</h2>
     </div>
 
@@ -19,8 +19,10 @@
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
       <li><a href="../compras/compras.html"><span class="icon">🛒</span>Compras</a></li>
-      <li><a href="../productos/productos.html"><span class="icon">🥐</span>Productos</a></li>
+      <li><a href="../productos/productos.html"><span class="icon">🌮</span>Productos</a></li>
       <li><a href="../inventario/inventario.html"><span class="icon">📦</span>Inventario</a></li>
+      <li><a href="../recetas/recetas.html"><span class="icon">📋</span>Recetas</a></li>
+      <li><a href="../proveedores/proveedores.html"><span class="icon">🚚</span>Proveedores</a></li>
       <li><a href="../gastos/gastos.html" class="active"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
@@ -33,7 +35,7 @@
   <header>
     <div class="header-content">
       <h1>Registro de Gastos</h1>
-      <p class="subtitle">Control de egresos del negocio</p>
+      <p class="subtitle">Control de egresos que no son compras de inventario</p>
     </div>
   </header>
 
@@ -68,9 +70,9 @@
       <h2>Nuevo Gasto</h2>
 
       <div class="form-row">
-        <div class="form-group">
+        <div class="form-group form-group-wide">
           <label for="descripcion">Descripción</label>
-          <input type="text" id="descripcion" placeholder="Ej: gas, bolsas, servilletas..." required>
+          <input type="text" id="descripcion" placeholder="Ej: gas, luz, transporte, reparación..." required>
         </div>
 
         <div class="form-group">
@@ -103,7 +105,7 @@
 
         <div class="filter-group filter-search">
           <label for="busqueda">Buscar</label>
-          <input type="text" id="busqueda" placeholder="Buscar por descripción..." oninput="filtrarGastos()">
+          <input type="text" id="busqueda" placeholder="Buscar por descripción o empleado..." oninput="filtrarGastos()">
         </div>
       </div>
 
@@ -112,8 +114,10 @@
           <tr>
             <th>#</th>
             <th>Fecha</th>
+            <th>Hora</th>
             <th>Descripción</th>
             <th>Monto</th>
+            <th>Empleado</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -121,15 +125,15 @@
 
         <tbody id="tabla">
           <tr class="empty-row">
-            <td colspan="6">Cargando gastos...</td>
+            <td colspan="8">Cargando gastos...</td>
           </tr>
         </tbody>
 
         <tfoot>
           <tr>
-            <td colspan="3" class="total-label">Total Mostrado:</td>
+            <td colspan="4" class="total-label">Total Mostrado:</td>
             <td class="total-value" id="totalMostrado">Q0.00</td>
-            <td colspan="2"></td>
+            <td colspan="3"></td>
           </tr>
         </tfoot>
       </table>
@@ -142,7 +146,7 @@
 
   <div id="mensaje" class="mensaje"></div>
 
-  <script src="../shared.js"></script>
+  <script src="/shared.js"></script>
   <script src="gastos.js"></script>
 </body>
 </html>

@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ventas - Quessabrosura</title>
-  <link rel="stylesheet" href="../base.css">
-  <link rel="stylesheet" href="../menu.css">
+  <link rel="stylesheet" href="/base.css">
+  <link rel="stylesheet" href="/menu.css">
   <link rel="stylesheet" href="ventas.css">
 </head>
 <body class="with-sidebar">
   <nav class="sidebar">
     <div class="sidebar-logo">
-      <span>🥐</span>
+      <span>🌮</span>
       <h2>Quessabrosura</h2>
     </div>
 
@@ -19,8 +19,10 @@
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html" class="active"><span class="icon">💰</span>Ventas</a></li>
       <li><a href="../compras/compras.html"><span class="icon">🛒</span>Compras</a></li>
-      <li><a href="../productos/productos.html"><span class="icon">🥐</span>Productos</a></li>
+      <li><a href="../productos/productos.html"><span class="icon">🌮</span>Productos</a></li>
       <li><a href="../inventario/inventario.html"><span class="icon">📦</span>Inventario</a></li>
+      <li><a href="../recetas/recetas.html"><span class="icon">📋</span>Recetas</a></li>
+      <li><a href="../proveedores/proveedores.html"><span class="icon">🚚</span>Proveedores</a></li>
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
@@ -32,8 +34,8 @@
 
   <header>
     <div class="header-content">
-      <h1>Registro de Ventas</h1>
-      <p class="subtitle">Gestión de transacciones y punto de venta</p>
+      <h1>Punto de Venta</h1>
+      <p class="subtitle">Venta rápida de productos con descuento automático de insumos</p>
     </div>
   </header>
 
@@ -66,79 +68,121 @@
       <div class="summary-card">
         <div class="summary-icon">🏦</div>
         <div class="summary-info">
-          <span class="summary-label">Transferencia</span>
-          <span class="summary-value" id="transferenciaTotal">Q0.00</span>
+          <span class="summary-label">Otros pagos</span>
+          <span class="summary-value" id="otrosPagosTotal">Q0.00</span>
         </div>
       </div>
     </section>
 
-    <section class="form-section">
-      <h2>Nueva Venta</h2>
+    <section class="pos-layout">
+      <div class="pos-productos">
+        <div class="pos-header">
+          <div>
+            <h2>Productos</h2>
+            <p>Selecciona productos para agregarlos al carrito</p>
+          </div>
+        </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="metodoPago">Método de Pago</label>
-          <select id="metodoPago" required>
-            <option value="">Seleccionar...</option>
-            <option value="efectivo">Efectivo</option>
-            <option value="transferencia">Transferencia</option>
+        <div class="pos-filtros">
+          <input type="text" id="buscadorProductos" placeholder="Buscar producto..." oninput="filtrarProductosPOS()">
+          <select id="filtroCategoria" onchange="filtrarProductosPOS()">
+            <option value="">Todas las categorías</option>
           </select>
+        </div>
+
+        <div id="contenedorProductos" class="productos-grid">
+          <div class="empty-card">Cargando productos...</div>
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label for="producto">Producto</label>
-          <select id="producto" required>
-            <option value="">Seleccionar producto...</option>
-          </select>
+      <div class="pos-carrito">
+        <h2>Carrito</h2>
+
+        <div id="listaCarrito" class="carrito-lista">
+          <div class="carrito-vacio">No hay productos agregados</div>
         </div>
 
-        <div class="form-group">
-          <label for="cantidad">Cantidad</label>
-          <input type="number" id="cantidad" placeholder="Cantidad" min="1" required>
+        <div class="carrito-total">
+          <span>Total:</span>
+          <strong id="totalCarrito">Q0.00</strong>
         </div>
 
-        <div class="form-group">
-          <label for="precio">Precio Unitario (Q)</label>
-          <input type="number" id="precio" placeholder="0.00" step="0.01" min="0" required>
+        <div class="observacion-box">
+          <label for="observacionRapida">Observación para próximo producto</label>
+          <input type="text" id="observacionRapida" placeholder="Ej: sin cebolla, sin salsa">
         </div>
 
-        <button type="button" class="btn-add" id="btnAgregar">Agregar</button>
+        <div class="carrito-actions">
+          <button class="btn-clear" id="btnLimpiar">Limpiar</button>
+          <button class="btn-save" id="btnAbrirPago">Cobrar</button>
+        </div>
       </div>
     </section>
 
-    <section class="list-section">
-      <h2>Items en Venta</h2>
+    <section class="payment-section" id="sectionPagos">
+      <h2>Pagos</h2>
+
+      <div class="payment-resumen">
+        <div>
+          <span>Total venta</span>
+          <strong id="totalVentaPago">Q0.00</strong>
+        </div>
+        <div>
+          <span>Total pagos</span>
+          <strong id="totalPagos">Q0.00</strong>
+        </div>
+        <div>
+          <span>Pendiente</span>
+          <strong id="pendientePago">Q0.00</strong>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="metodoPago">Método de pago</label>
+          <select id="metodoPago">
+            <option value="">Seleccionar método...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="montoPago">Monto (Q)</label>
+          <input type="number" id="montoPago" placeholder="0.00" step="0.01" min="0">
+        </div>
+
+        <div class="form-group form-group-wide">
+          <label for="referenciaPago">Referencia</label>
+          <input type="text" id="referenciaPago" placeholder="No. transferencia, voucher, etc.">
+        </div>
+
+        <button type="button" class="btn-add" id="btnAgregarPago">Agregar Pago</button>
+      </div>
+
+      <div class="payment-buttons">
+        <button class="btn-quick" id="btnPagoEfectivo">Pago total efectivo</button>
+        <button class="btn-quick" id="btnPagoTransferencia">Pago total transferencia</button>
+        <button class="btn-quick" id="btnPagoTarjeta">Pago total tarjeta</button>
+      </div>
 
       <table>
         <thead>
           <tr>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio Unit.</th>
-            <th>Subtotal</th>
+            <th>Método</th>
+            <th>Monto</th>
+            <th>Referencia</th>
             <th>Acción</th>
           </tr>
         </thead>
 
-        <tbody id="lista">
+        <tbody id="listaPagos">
           <tr class="empty-row">
-            <td colspan="5">No hay productos agregados</td>
+            <td colspan="4">No hay pagos agregados</td>
           </tr>
         </tbody>
-
-        <tfoot>
-          <tr>
-            <td colspan="3" class="total-label">Total:</td>
-            <td colspan="2" class="total-value" id="totalCarrito">Q0.00</td>
-          </tr>
-        </tfoot>
       </table>
 
       <div class="actions">
-        <button class="btn-save" id="btnCobrar">Cobrar</button>
-        <button class="btn-clear" id="btnLimpiar">Limpiar</button>
+        <button class="btn-save" id="btnCobrar">Confirmar Venta</button>
       </div>
     </section>
 
@@ -156,15 +200,6 @@
           <input type="date" id="fechaFin" onchange="filtrarVentas()">
         </div>
 
-        <div class="filter-group">
-          <label for="filtroMetodo">Método de Pago</label>
-          <select id="filtroMetodo" onchange="filtrarVentas()">
-            <option value="">Todos</option>
-            <option value="efectivo">Efectivo</option>
-            <option value="transferencia">Transferencia</option>
-          </select>
-        </div>
-
         <div class="filter-group filter-search">
           <label for="busqueda">Buscar</label>
           <input type="text" id="busqueda" placeholder="#, empleado, método..." oninput="filtrarVentas()">
@@ -178,7 +213,7 @@
             <th>Fecha</th>
             <th>Hora</th>
             <th>Total</th>
-            <th>Método</th>
+            <th>Pagos</th>
             <th>Empleado</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -199,9 +234,10 @@
   </footer>
 
   <div id="modalDetalle" class="modal">
-    <div class="modal-content">
+    <div class="modal-content modal-large">
       <h2 id="detalleTitulo">Detalle de Venta</h2>
 
+      <h3>Productos</h3>
       <table>
         <thead>
           <tr>
@@ -209,6 +245,7 @@
             <th>Cantidad</th>
             <th>Precio Unit.</th>
             <th>Subtotal</th>
+            <th>Observación</th>
           </tr>
         </thead>
 
@@ -217,9 +254,21 @@
         <tfoot>
           <tr>
             <td colspan="3" class="total-label">Total:</td>
-            <td class="total-value" id="detalleTotal">Q0.00</td>
+            <td colspan="2" class="total-value" id="detalleTotal">Q0.00</td>
           </tr>
         </tfoot>
+      </table>
+
+      <h3>Pagos</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Método</th>
+            <th>Monto</th>
+            <th>Referencia</th>
+          </tr>
+        </thead>
+        <tbody id="detallePagos"></tbody>
       </table>
 
       <div class="form-actions">
@@ -230,7 +279,7 @@
 
   <div id="mensaje" class="mensaje"></div>
 
-  <script src="../shared.js"></script>
+  <script src="/shared.js"></script>
   <script src="ventas.js"></script>
 </body>
 </html>

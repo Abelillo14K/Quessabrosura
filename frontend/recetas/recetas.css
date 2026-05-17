@@ -1,0 +1,14 @@
+.descripcion-producto {
+  background: #fff8e1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 4px solid #f9a825;
+  margin-bottom: 16px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.form-group-wide {
+  flex: 2;
+  min-width: 280px;
+}

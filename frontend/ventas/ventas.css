@@ -106,6 +106,10 @@
   color: #c62828;
 }
 
+.payment-section {
+  border-left: 4px solid #f9a825;
+}
+
 .total-cell {
   font-weight: 700;
   color: var(--success);

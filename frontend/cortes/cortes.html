@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cortes - Quessabrosura</title>
-  <link rel="stylesheet" href="../base.css">
-  <link rel="stylesheet" href="../menu.css">
+  <link rel="stylesheet" href="/base.css">
+  <link rel="stylesheet" href="/menu.css">
   <link rel="stylesheet" href="cortes.css">
 </head>
 <body class="with-sidebar">
   <nav class="sidebar">
     <div class="sidebar-logo">
-      <span>🥐</span>
+      <span>🌮</span>
       <h2>Quessabrosura</h2>
     </div>
 
@@ -19,8 +19,10 @@
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
       <li><a href="../compras/compras.html"><span class="icon">🛒</span>Compras</a></li>
-      <li><a href="../productos/productos.html"><span class="icon">🥐</span>Productos</a></li>
+      <li><a href="../productos/productos.html"><span class="icon">🌮</span>Productos</a></li>
       <li><a href="../inventario/inventario.html"><span class="icon">📦</span>Inventario</a></li>
+      <li><a href="../recetas/recetas.html"><span class="icon">📋</span>Recetas</a></li>
+      <li><a href="../proveedores/proveedores.html"><span class="icon">🚚</span>Proveedores</a></li>
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html" class="active"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
@@ -33,67 +35,80 @@
   <header>
     <div class="header-content">
       <h1>Corte de Caja</h1>
-      <p class="subtitle">Resumen diario y cierre de operaciones</p>
+      <p class="subtitle">Resumen diario de ventas, gastos y pagos</p>
     </div>
   </header>
 
   <main>
     <section class="summary-section">
-      <div class="summary-card summary-ventas">
+      <div class="summary-card">
         <div class="summary-icon">💰</div>
         <div class="summary-info">
           <span class="summary-label">Ventas del Día</span>
-          <span class="summary-value" id="totalVentas">Q0.00</span>
-          <span class="summary-sub" id="ventasDetalle">Cargando...</span>
+          <span class="summary-value" id="ventasDia">Q0.00</span>
+          <small id="desgloseVentas">0 ventas</small>
         </div>
       </div>
 
-      <div class="summary-card summary-gastos">
+      <div class="summary-card">
         <div class="summary-icon">📊</div>
         <div class="summary-info">
           <span class="summary-label">Gastos del Día</span>
-          <span class="summary-value" id="totalGastos">Q0.00</span>
+          <span class="summary-value" id="gastosDia">Q0.00</span>
         </div>
       </div>
 
-      <div class="summary-card summary-esperado">
+      <div class="summary-card">
         <div class="summary-icon">📋</div>
         <div class="summary-info">
           <span class="summary-label">Esperado Neto</span>
-          <span class="summary-value" id="esperadoValor">Q0.00</span>
-          <span class="summary-sub">Ventas - gastos</span>
+          <span class="summary-value" id="esperadoNeto">Q0.00</span>
+          <small>ventas - gastos</small>
         </div>
       </div>
 
-      <div class="summary-card summary-salida">
-        <div class="summary-icon">📤</div>
+      <div class="summary-card">
+        <div class="summary-icon">💵</div>
         <div class="summary-info">
-          <span class="summary-label">Total Registrado</span>
-          <span class="summary-value" id="salidaValor">Pendiente</span>
+          <span class="summary-label">Efectivo</span>
+          <span class="summary-value" id="efectivoSistema">Q0.00</span>
         </div>
       </div>
 
-      <div class="summary-card summary-diferencia">
-        <div class="summary-icon">⚖️</div>
+      <div class="summary-card">
+        <div class="summary-icon">🏦</div>
         <div class="summary-info">
-          <span class="summary-label">Diferencia</span>
-          <span class="summary-value" id="diferenciaValor">Pendiente</span>
+          <span class="summary-label">Transferencia</span>
+          <span class="summary-value" id="transferenciaSistema">Q0.00</span>
+        </div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-icon">💳</div>
+        <div class="summary-info">
+          <span class="summary-label">Tarjeta</span>
+          <span class="summary-value" id="tarjetaSistema">Q0.00</span>
         </div>
       </div>
     </section>
 
-    <section id="formSection">
-      <h2 id="formTitle">Registrar Corte de Caja</h2>
+    <section>
+      <h2>Registrar Corte de Caja</h2>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="total_efectivo">Total Efectivo Real</label>
-          <input type="number" id="total_efectivo" placeholder="0.00" step="0.01" min="0" required>
+          <label for="totalEfectivo">Total efectivo real</label>
+          <input type="number" id="totalEfectivo" placeholder="0.00" step="0.01" min="0">
         </div>
 
         <div class="form-group">
-          <label for="total_transferencia">Total Transferencia Real</label>
-          <input type="number" id="total_transferencia" placeholder="0.00" step="0.01" min="0" required>
+          <label for="totalTransferencia">Total transferencia real</label>
+          <input type="number" id="totalTransferencia" placeholder="0.00" step="0.01" min="0">
+        </div>
+
+        <div class="form-group">
+          <label for="totalTarjeta">Total tarjeta real</label>
+          <input type="number" id="totalTarjeta" placeholder="0.00" step="0.01" min="0">
         </div>
 
         <button type="button" class="btn-add" id="btnRegistrar">Registrar Corte</button>
@@ -116,18 +131,21 @@
 
         <div class="filter-group filter-search">
           <label for="busqueda">Buscar</label>
-          <input type="text" id="busqueda" placeholder="Buscar por # corte..." oninput="filtrarCortes()">
+          <input type="text" id="busqueda" placeholder="Buscar por # corte o empleado..." oninput="filtrarCortes()">
         </div>
       </div>
 
       <table>
         <thead>
           <tr>
-            <th>#</th>
+            <th># Corte</th>
             <th>Fecha</th>
-            <th>Efectivo</th>
-            <th>Transferencia</th>
-            <th>Total</th>
+            <th>Hora</th>
+            <th>Ventas</th>
+            <th>Gastos</th>
+            <th>Total Registrado</th>
+            <th>Diferencia</th>
+            <th>Empleado</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -135,7 +153,7 @@
 
         <tbody id="tabla">
           <tr class="empty-row">
-            <td colspan="7">Cargando cortes...</td>
+            <td colspan="10">Cargando cortes...</td>
           </tr>
         </tbody>
       </table>
@@ -148,7 +166,7 @@
 
   <div id="mensaje" class="mensaje"></div>
 
-  <script src="../shared.js"></script>
+  <script src="/shared.js"></script>
   <script src="cortes.js"></script>
 </body>
 </html>

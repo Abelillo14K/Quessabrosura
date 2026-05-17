@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ticket - Quessabrosura</title>
+  <link rel="stylesheet" href="ticket.css">
+</head>
+<body>
+  <main class="ticket-container">
+    <div class="ticket" id="ticket">
+      <div class="ticket-header">
+        <h1 id="negocioNombre">QUESSABROSURA</h1>
+        <p id="negocioDireccion">Local de comida rápida</p>
+        <p id="negocioTelefono"></p>
+        <hr>
+        <h2>TICKET DE VENTA</h2>
+      </div>
+
+      <div class="ticket-info">
+        <p><strong>No. Ticket:</strong> <span id="numeroTicket">---</span></p>
+        <p><strong>Venta:</strong> <span id="idVenta">---</span></p>
+        <p><strong>Fecha:</strong> <span id="fechaVenta">---</span></p>
+        <p><strong>Hora:</strong> <span id="horaVenta">---</span></p>
+        <p><strong>Empleado:</strong> <span id="empleadoVenta">---</span></p>
+        <p><strong>Cliente:</strong> <span id="clienteVenta">Consumidor final</span></p>
+        <p><strong>NIT:</strong> <span id="nitVenta">CF</span></p>
+      </div>
+
+      <hr>
+
+      <table class="ticket-table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cant.</th>
+            <th>Precio</th>
+            <th>Sub.</th>
+          </tr>
+        </thead>
+        <tbody id="detalleTicket">
+          <tr>
+            <td colspan="4">Cargando...</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr>
+
+      <div class="ticket-total">
+        <p><strong>Total:</strong> <span id="totalVenta">Q0.00</span></p>
+      </div>
+
+      <div class="ticket-pagos">
+        <h3>Pagos</h3>
+        <div id="pagosTicket"></div>
+      </div>
+
+      <hr>
+
+      <div class="ticket-footer">
+        <p>Gracias por su compra</p>
+        <p>¡Vuelva pronto!</p>
+      </div>
+    </div>
+
+    <div class="ticket-actions">
+      <button onclick="window.print()">Imprimir Ticket</button>
+      <button onclick="volverVentas()">Volver a Ventas</button>
+    </div>
+  </main>
+
+  <script src="/shared.js"></script>
+  <script src="ticket.js"></script>
+</body>
+</html>

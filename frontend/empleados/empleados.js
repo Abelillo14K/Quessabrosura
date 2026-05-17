@@ -1,35 +1,41 @@
 let empleados = [];
+let filtroActual = '';
 
 const tabla = document.getElementById('tabla');
 const btnAgregar = document.getElementById('btnAgregar');
 const btnGuardar = document.getElementById('btnGuardar');
 
-function getRoleClass(rol) {
-    const rolNormalizado = String(rol || '').toLowerCase();
-
-    const roleMap = {
-        'cocinero': 'cocinero',
-        'mesero': 'mesero',
-        'cajero': 'cajero',
-        'administrador': 'administrador',
-        'admin': 'administrador'
-    };
-
-    return roleMap[rolNormalizado] || '';
-}
-
 async function cargarEmpleados() {
     try {
         empleados = await apiFetch('/api/empleados');
-        renderizarTabla(empleados);
+        aplicarFiltro();
+
     } catch (err) {
         tabla.innerHTML = `
             <tr class="empty-row">
-                <td colspan="5">No se pudieron cargar los empleados</td>
+                <td colspan="7">No se pudieron cargar los empleados</td>
             </tr>
         `;
         mostrarError(err.message);
     }
+}
+
+function getRolClass(rol) {
+    const r = String(rol || '').toLowerCase();
+
+    if (r === 'administrador') {
+        return 'rol-admin';
+    }
+
+    if (r === 'cajero') {
+        return 'rol-cajero';
+    }
+
+    if (r === 'inventario') {
+        return 'rol-inventario';
+    }
+
+    return 'rol-cocina';
 }
 
 function renderizarTabla(data) {
@@ -38,30 +44,41 @@ function renderizarTabla(data) {
     if (!data || data.length === 0) {
         tabla.innerHTML = `
             <tr class="empty-row">
-                <td colspan="5">No hay empleados registrados</td>
+                <td colspan="7">No hay empleados registrados</td>
             </tr>
         `;
         return;
     }
 
-    data.forEach(emp => {
+    data.forEach(empleado => {
+        const activo = empleado.activo == 1;
+
         tabla.innerHTML += `
-            <tr>
-                <td>${emp.id_empleado}</td>
-                <td><strong>${emp.nombre}</strong></td>
-                <td>${emp.usuario || '—'}</td>
+            <tr class="${activo ? '' : 'row-inactivo'}">
+                <td>${empleado.id_empleado}</td>
+                <td><strong>${empleado.nombre}</strong></td>
+                <td>${empleado.usuario}</td>
                 <td>
-                    <span class="role-badge ${getRoleClass(emp.rol)}">
-                        ${emp.rol || 'Sin rol'}
+                    <span class="rol-badge ${getRolClass(empleado.rol)}">
+                        ${empleado.rol}
                     </span>
                 </td>
                 <td>
-                    <button class="btn-edit" onclick="abrirModal(${emp.id_empleado})">
+                    <span class="badge ${activo ? 'badge-success' : 'badge-danger'}">
+                        ${activo ? 'Activo' : 'Inactivo'}
+                    </span>
+                </td>
+                <td>${formatearFecha(empleado.fecha_creacion)}</td>
+                <td>
+                    <button class="btn-edit" onclick="abrirModal(${empleado.id_empleado})">
                         Editar
                     </button>
-                    <button class="btn-delete" onclick="eliminar(${emp.id_empleado})">
-                        Eliminar
-                    </button>
+
+                    ${activo ? `
+                        <button class="btn-delete" onclick="desactivarEmpleado(${empleado.id_empleado})">
+                            Desactivar
+                        </button>
+                    ` : ''}
                 </td>
             </tr>
         `;
@@ -71,16 +88,26 @@ function renderizarTabla(data) {
 async function crearEmpleado() {
     const nombre = document.getElementById('nombre').value.trim();
     const usuario = document.getElementById('usuario').value.trim();
-    const password = document.getElementById('password').value;
+    const password = document.getElementById('password').value.trim();
     const rol = document.getElementById('rol').value;
 
-    if (!nombre || !usuario || !password || !rol) {
-        mostrarError('Por favor complete todos los campos');
+    if (!nombre) {
+        mostrarError('Ingrese el nombre del empleado');
         return;
     }
 
-    if (password.length < 4) {
-        mostrarError('La contraseña debe tener al menos 4 caracteres');
+    if (!usuario) {
+        mostrarError('Ingrese el usuario');
+        return;
+    }
+
+    if (!password) {
+        mostrarError('Ingrese una contraseña inicial');
+        return;
+    }
+
+    if (!rol) {
+        mostrarError('Seleccione un rol');
         return;
     }
 
@@ -98,7 +125,10 @@ async function crearEmpleado() {
             }
         });
 
-        document.getElementById('empleadoForm').reset();
+        document.getElementById('nombre').value = '';
+        document.getElementById('usuario').value = '';
+        document.getElementById('password').value = '';
+        document.getElementById('rol').value = '';
 
         await cargarEmpleados();
 
@@ -108,7 +138,7 @@ async function crearEmpleado() {
         mostrarError(err.message);
     } finally {
         btnAgregar.disabled = false;
-        btnAgregar.textContent = 'Agregar';
+        btnAgregar.textContent = 'Agregar Empleado';
     }
 }
 
@@ -123,8 +153,9 @@ function abrirModal(id) {
     document.getElementById('editId').value = empleado.id_empleado;
     document.getElementById('editNombre').value = empleado.nombre || '';
     document.getElementById('editUsuario').value = empleado.usuario || '';
+    document.getElementById('editRol').value = empleado.rol || 'Cajero';
+    document.getElementById('editActivo').checked = empleado.activo == 1;
     document.getElementById('editPassword').value = '';
-    document.getElementById('editRol').value = empleado.rol || '';
 
     document.getElementById('modalEditar').style.display = 'block';
 }
@@ -133,27 +164,23 @@ async function actualizarEmpleado() {
     const id = document.getElementById('editId').value;
     const nombre = document.getElementById('editNombre').value.trim();
     const usuario = document.getElementById('editUsuario').value.trim();
-    const password = document.getElementById('editPassword').value;
     const rol = document.getElementById('editRol').value;
+    const activo = document.getElementById('editActivo').checked ? 1 : 0;
+    const password = document.getElementById('editPassword').value.trim();
 
-    if (!nombre || !usuario || !rol) {
-        mostrarError('Por favor complete nombre, usuario y rol');
+    if (!nombre) {
+        mostrarError('Ingrese el nombre del empleado');
         return;
     }
 
-    const body = {
-        nombre,
-        usuario,
-        rol
-    };
+    if (!usuario) {
+        mostrarError('Ingrese el usuario');
+        return;
+    }
 
-    if (password && password.trim()) {
-        if (password.length < 4) {
-            mostrarError('La nueva contraseña debe tener al menos 4 caracteres');
-            return;
-        }
-
-        body.password = password;
+    if (!rol) {
+        mostrarError('Seleccione un rol');
+        return;
     }
 
     try {
@@ -162,8 +189,22 @@ async function actualizarEmpleado() {
 
         await apiFetch(`/api/empleados/${id}`, {
             method: 'PUT',
-            body
+            body: {
+                nombre,
+                usuario,
+                rol,
+                activo
+            }
         });
+
+        if (password) {
+            await apiFetch(`/api/empleados/${id}/password`, {
+                method: 'PATCH',
+                body: {
+                    password
+                }
+            });
+        }
 
         cerrarModal();
         await cargarEmpleados();
@@ -178,15 +219,8 @@ async function actualizarEmpleado() {
     }
 }
 
-async function eliminar(id) {
-    const empleadoSesion = getEmpleadoSesion();
-
-    if (empleadoSesion && Number(empleadoSesion.id_empleado) === Number(id)) {
-        mostrarError('No puedes eliminar tu propio usuario mientras tienes sesión iniciada');
-        return;
-    }
-
-    if (!confirm('¿Está seguro de eliminar este empleado?')) {
+async function desactivarEmpleado(id) {
+    if (!confirm('¿Desea desactivar este empleado?')) {
         return;
     }
 
@@ -197,7 +231,7 @@ async function eliminar(id) {
 
         await cargarEmpleados();
 
-        mostrarExito('Empleado eliminado');
+        mostrarExito('Empleado desactivado');
 
     } catch (err) {
         mostrarError(err.message);
@@ -205,12 +239,20 @@ async function eliminar(id) {
 }
 
 function buscarEmpleado() {
-    const busqueda = document.getElementById('busqueda').value.trim().toLowerCase();
+    filtroActual = document.getElementById('busqueda').value.trim().toLowerCase();
+    aplicarFiltro();
+}
 
-    const filtrados = empleados.filter(emp => {
-        return String(emp.nombre || '').toLowerCase().includes(busqueda) ||
-               String(emp.usuario || '').toLowerCase().includes(busqueda) ||
-               String(emp.rol || '').toLowerCase().includes(busqueda);
+function aplicarFiltro() {
+    if (!filtroActual) {
+        renderizarTabla(empleados);
+        return;
+    }
+
+    const filtrados = empleados.filter(empleado => {
+        return String(empleado.nombre || '').toLowerCase().includes(filtroActual) ||
+               String(empleado.usuario || '').toLowerCase().includes(filtroActual) ||
+               String(empleado.rol || '').toLowerCase().includes(filtroActual);
     });
 
     renderizarTabla(filtrados);

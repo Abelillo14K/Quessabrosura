@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recetas - Quessabrosura</title>
+  <link rel="stylesheet" href="../base.css">
+  <link rel="stylesheet" href="../menu.css">
+  <link rel="stylesheet" href="recetas.css">
+</head>
+<body class="with-sidebar">
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <span>🌮</span>
+      <h2>Quessabrosura</h2>
+    </div>
+
+    <ul class="sidebar-menu">
+      <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
+      <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
+      <li><a href="../compras/compras.html"><span class="icon">🛒</span>Compras</a></li>
+      <li><a href="../productos/productos.html"><span class="icon">🌮</span>Productos</a></li>
+      <li><a href="../inventario/inventario.html"><span class="icon">📦</span>Inventario</a></li>
+      <li><a href="../recetas/recetas.html" class="active"><span class="icon">📋</span>Recetas</a></li>
+      <li><a href="../proveedores/proveedores.html"><span class="icon">🚚</span>Proveedores</a></li>
+      <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
+      <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+  </nav>
+
+  <header>
+    <div class="header-content">
+      <h1>Recetas de Productos</h1>
+      <p class="subtitle">Define qué insumos consume cada producto vendido</p>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Seleccionar Producto</h2>
+
+      <div class="form-row">
+        <div class="form-group form-group-wide">
+          <label for="producto">Producto</label>
+          <select id="producto" required>
+            <option value="">Seleccione un producto...</option>
+          </select>
+        </div>
+
+        <button type="button" class="btn-add" id="btnCargarReceta">
+          Cargar Receta
+        </button>
+      </div>
+    </section>
+
+    <section id="sectionProducto" style="display: none;">
+      <h2 id="productoTitulo">Receta</h2>
+      <p id="productoDescripcion" class="descripcion-producto"></p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="insumo">Insumo</label>
+          <select id="insumo">
+            <option value="">Seleccione insumo...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="cantidad">Cantidad usada</label>
+          <input type="number" id="cantidad" step="0.01" min="0" placeholder="0.00">
+        </div>
+
+        <button type="button" class="btn-add" id="btnAgregarInsumo">
+          Agregar
+        </button>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Insumo</th>
+            <th>Cantidad usada</th>
+            <th>Unidad</th>
+            <th>Stock actual</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+
+        <tbody id="tablaReceta">
+          <tr class="empty-row">
+            <td colspan="5">No hay insumos en esta receta</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="actions">
+        <button type="button" class="btn-save" id="btnGuardarReceta">
+          Guardar Receta
+        </button>
+      </div>
+    </section>
+
+    <section>
+      <h2>Resumen de Recetas</h2>
+
+      <div class="search-box">
+        <input type="text" id="busqueda" placeholder="Buscar por producto o insumo..." oninput="buscarRecetas()">
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Insumo</th>
+            <th>Cantidad</th>
+            <th>Unidad</th>
+          </tr>
+        </thead>
+
+        <tbody id="tablaTodas">
+          <tr class="empty-row">
+            <td colspan="5">Cargando recetas...</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>Sistema Quessabrosura &copy; 2026</p>
+  </footer>
+
+  <div id="mensaje" class="mensaje"></div>
+
+  <script src="../shared.js"></script>
+  <script src="recetas.js"></script>
+  
+</body>
+</html>

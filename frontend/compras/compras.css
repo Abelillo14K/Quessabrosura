@@ -26,3 +26,12 @@
 .row-anulada:hover {
   background: #f5f5f5 !important;
 }
+
+.form-group-wide {
+  flex: 2;
+  min-width: 260px;
+}
+
+.modal-large {
+  max-width: 850px;
+}

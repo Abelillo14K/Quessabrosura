@@ -3,12 +3,22 @@ let gastos = [];
 const tabla = document.getElementById('tabla');
 const btnRegistrar = document.getElementById('btnRegistrar');
 
+function obtenerFechaActual() {
+    const hoy = new Date();
+    const year = hoy.getFullYear();
+    const month = String(hoy.getMonth() + 1).padStart(2, '0');
+    const day = String(hoy.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
 async function cargarResumen() {
     try {
         const data = await apiFetch('/api/gastos/resumen');
 
         document.getElementById('gastosHoy').textContent = formatearMoneda(data.hoy || 0);
         document.getElementById('gastosMes').textContent = formatearMoneda(data.mes || 0);
+        document.getElementById('totalGastos').textContent = formatearMoneda(data.total || 0);
 
     } catch (err) {
         console.error('Error al cargar resumen:', err);
@@ -19,12 +29,11 @@ async function cargarGastos() {
     try {
         gastos = await apiFetch('/api/gastos');
         aplicarFiltros();
-        actualizarTotalGeneral();
 
     } catch (err) {
         tabla.innerHTML = `
             <tr class="empty-row">
-                <td colspan="6">No se pudieron cargar los gastos</td>
+                <td colspan="8">No se pudieron cargar los gastos</td>
             </tr>
         `;
         mostrarError(err.message);
@@ -39,20 +48,17 @@ function aplicarFiltros() {
     let filtradas = [...gastos];
 
     if (fechaInicio) {
-        filtradas = filtradas.filter(gasto => {
-            return String(gasto.fecha).slice(0, 10) >= fechaInicio;
-        });
+        filtradas = filtradas.filter(gasto => String(gasto.fecha).slice(0, 10) >= fechaInicio);
     }
 
     if (fechaFin) {
-        filtradas = filtradas.filter(gasto => {
-            return String(gasto.fecha).slice(0, 10) <= fechaFin;
-        });
+        filtradas = filtradas.filter(gasto => String(gasto.fecha).slice(0, 10) <= fechaFin);
     }
 
     if (busqueda) {
         filtradas = filtradas.filter(gasto => {
-            return String(gasto.descripcion || '').toLowerCase().includes(busqueda);
+            return String(gasto.descripcion || '').toLowerCase().includes(busqueda) ||
+                   String(gasto.empleado || '').toLowerCase().includes(busqueda);
         });
     }
 
@@ -65,7 +71,7 @@ function renderizarTabla(data) {
     if (!data || data.length === 0) {
         tabla.innerHTML = `
             <tr class="empty-row">
-                <td colspan="6">No hay gastos registrados</td>
+                <td colspan="8">No hay gastos registrados</td>
             </tr>
         `;
 
@@ -76,7 +82,7 @@ function renderizarTabla(data) {
     let totalMostrado = 0;
 
     data.forEach(gasto => {
-        const monto = parseFloat(gasto.monto || 0);
+        const monto = Number(gasto.monto || 0);
         const estaAnulado = gasto.anulada == 1;
 
         if (!estaAnulado) {
@@ -87,8 +93,10 @@ function renderizarTabla(data) {
             <tr class="${estaAnulado ? 'row-anulada' : ''}">
                 <td>#${gasto.id_gasto}</td>
                 <td>${formatearFecha(gasto.fecha)}</td>
+                <td>${gasto.hora ? String(gasto.hora).slice(0, 5) : 'N/A'}</td>
                 <td><strong>${gasto.descripcion}</strong></td>
                 <td class="monto-cell">${formatearMoneda(monto)}</td>
+                <td>${gasto.empleado || '—'}</td>
                 <td>
                     <span class="status ${estaAnulado ? 'status-anulado' : 'status-activo'}">
                         ${estaAnulado ? 'Anulado' : 'Activo'}
@@ -106,18 +114,6 @@ function renderizarTabla(data) {
     });
 
     document.getElementById('totalMostrado').textContent = formatearMoneda(totalMostrado);
-}
-
-function actualizarTotalGeneral() {
-    let total = 0;
-
-    gastos.forEach(gasto => {
-        if (gasto.anulada != 1) {
-            total += parseFloat(gasto.monto || 0);
-        }
-    });
-
-    document.getElementById('totalGastos').textContent = formatearMoneda(total);
 }
 
 function filtrarGastos() {
@@ -187,15 +183,6 @@ async function anularGasto(id) {
     } catch (err) {
         mostrarError(err.message);
     }
-}
-
-function obtenerFechaActual() {
-    const hoy = new Date();
-    const year = hoy.getFullYear();
-    const month = String(hoy.getMonth() + 1).padStart(2, '0');
-    const day = String(hoy.getDate()).padStart(2, '0');
-
-    return `${year}-${month}-${day}`;
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const controller = require('../controllers/productoController');
+const controller = require('../controllers/insumoController');
 const { verificarToken, autorizarRoles } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 
@@ -9,38 +9,44 @@ router.use(verificarToken);
 
 router.get(
     '/',
-    autorizarRoles('Administrador', 'Inventario', 'Cajero', 'Cocina'),
-    asyncHandler(controller.obtenerProductos)
+    autorizarRoles('Administrador', 'Inventario', 'Cocina'),
+    asyncHandler(controller.obtenerInsumos)
+);
+
+router.get(
+    '/movimientos',
+    autorizarRoles('Administrador', 'Inventario'),
+    asyncHandler(controller.obtenerMovimientos)
 );
 
 router.get(
     '/:id',
-    autorizarRoles('Administrador', 'Inventario', 'Cajero', 'Cocina'),
-    asyncHandler(controller.obtenerProducto)
+    autorizarRoles('Administrador', 'Inventario', 'Cocina'),
+    asyncHandler(controller.obtenerInsumo)
 );
 
 router.post(
     '/',
     autorizarRoles('Administrador', 'Inventario'),
-    asyncHandler(controller.crearProducto)
+    asyncHandler(controller.crearInsumo)
 );
 
 router.put(
     '/:id',
     autorizarRoles('Administrador', 'Inventario'),
-    asyncHandler(controller.actualizarProducto)
+    asyncHandler(controller.actualizarInsumo)
 );
 
 router.patch(
-    '/:id/activo',
+    '/:id/stock',
     autorizarRoles('Administrador', 'Inventario'),
-    asyncHandler(controller.actualizarActivo)
+    asyncHandler(controller.ajustarStock)
 );
 
 router.delete(
     '/:id',
     autorizarRoles('Administrador', 'Inventario'),
-    asyncHandler(controller.desactivarProducto)
+    asyncHandler(controller.desactivarInsumo)
 );
 
 module.exports = router;

@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Productos - Quessabrosura</title>
-  <link rel="stylesheet" href="../base.css">
-  <link rel="stylesheet" href="../menu.css">
-  <link rel="stylesheet" href="productos.css">
+  <title>Proveedores - Quessabrosura</title>
+  <link rel="stylesheet" href="/base.css">
+  <link rel="stylesheet" href="/menu.css">
+  <link rel="stylesheet" href="proveedores.css">
 </head>
 <body class="with-sidebar">
   <nav class="sidebar">
@@ -19,10 +19,10 @@
       <li><a href="../empleados/empleados.html"><span class="icon">👨‍🍳</span>Empleados</a></li>
       <li><a href="../ventas/ventas.html"><span class="icon">💰</span>Ventas</a></li>
       <li><a href="../compras/compras.html"><span class="icon">🛒</span>Compras</a></li>
-      <li><a href="../productos/productos.html" class="active"><span class="icon">🌮</span>Productos</a></li>
+      <li><a href="../productos/productos.html"><span class="icon">🌮</span>Productos</a></li>
       <li><a href="../inventario/inventario.html"><span class="icon">📦</span>Inventario</a></li>
       <li><a href="../recetas/recetas.html"><span class="icon">📋</span>Recetas</a></li>
-      <li><a href="../proveedores/proveedores.html"><span class="icon">🚚</span>Proveedores</a></li>
+      <li><a href="../proveedores/proveedores.html" class="active"><span class="icon">🚚</span>Proveedores</a></li>
       <li><a href="../gastos/gastos.html"><span class="icon">📊</span>Gastos</a></li>
       <li><a href="../cortes/cortes.html"><span class="icon">✂️</span>Cortes</a></li>
     </ul>
@@ -34,61 +34,51 @@
 
   <header>
     <div class="header-content">
-      <h1>Gestión de Productos</h1>
-      <p class="subtitle">Menú de productos que se venden al cliente</p>
+      <h1>Gestión de Proveedores</h1>
+      <p class="subtitle">Proveedores usados para registrar compras de insumos</p>
     </div>
   </header>
 
   <main>
     <section>
-      <h2>Nuevo Producto</h2>
+      <h2>Nuevo Proveedor</h2>
 
       <div class="form-row">
         <div class="form-group">
           <label for="nombre">Nombre</label>
-          <input type="text" id="nombre" placeholder="Ej: Taco de res" required>
+          <input type="text" id="nombre" placeholder="Ej: Proveedor de carnes" required>
         </div>
 
         <div class="form-group">
-          <label for="id_categoria">Categoría</label>
-          <select id="id_categoria" required>
-            <option value="">Seleccione una categoría</option>
-          </select>
+          <label for="telefono">Teléfono</label>
+          <input type="text" id="telefono" placeholder="Ej: 5555-5555">
         </div>
 
-        <div class="form-group">
-          <label for="precio_venta">Precio Venta (Q)</label>
-          <input type="number" step="0.01" id="precio_venta" placeholder="0.00" min="0" required>
-        </div>
-      </div>
-
-      <div class="form-row">
         <div class="form-group form-group-wide">
-          <label for="descripcion">Descripción</label>
-          <input type="text" id="descripcion" placeholder="Descripción opcional del producto">
+          <label for="direccion">Dirección</label>
+          <input type="text" id="direccion" placeholder="Dirección opcional">
         </div>
       </div>
 
       <div class="actions">
-        <button type="button" class="btn-add" id="btnAgregar">Agregar Producto</button>
+        <button type="button" class="btn-add" id="btnAgregar">Agregar Proveedor</button>
       </div>
     </section>
 
     <section>
-      <h2>Lista de Productos</h2>
+      <h2>Lista de Proveedores</h2>
 
       <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Buscar por nombre, categoría o descripción..." oninput="buscarProducto()">
+        <input type="text" id="busqueda" placeholder="Buscar por nombre, teléfono o dirección..." oninput="buscarProveedor()">
       </div>
 
       <table>
         <thead>
           <tr>
             <th>#</th>
-            <th>Producto</th>
-            <th>Categoría</th>
-            <th>Descripción</th>
-            <th>Precio</th>
+            <th>Proveedor</th>
+            <th>Teléfono</th>
+            <th>Dirección</th>
             <th>Estado</th>
             <th>Acciones</th>
           </tr>
@@ -96,7 +86,7 @@
 
         <tbody id="tabla">
           <tr class="empty-row">
-            <td colspan="7">Cargando productos...</td>
+            <td colspan="6">Cargando proveedores...</td>
           </tr>
         </tbody>
       </table>
@@ -109,7 +99,7 @@
 
   <div id="modalEditar" class="modal">
     <div class="modal-content">
-      <h2>Editar Producto</h2>
+      <h2>Editar Proveedor</h2>
 
       <input type="hidden" id="editId">
 
@@ -119,24 +109,19 @@
       </div>
 
       <div class="form-group">
-        <label for="editCategoria">Categoría</label>
-        <select id="editCategoria" required></select>
+        <label for="editTelefono">Teléfono</label>
+        <input type="text" id="editTelefono">
       </div>
 
       <div class="form-group">
-        <label for="editDescripcion">Descripción</label>
-        <input type="text" id="editDescripcion">
-      </div>
-
-      <div class="form-group">
-        <label for="editPrecioVenta">Precio Venta (Q)</label>
-        <input type="number" step="0.01" id="editPrecioVenta" min="0" required>
+        <label for="editDireccion">Dirección</label>
+        <input type="text" id="editDireccion">
       </div>
 
       <div class="form-group">
         <label>
           <input type="checkbox" id="editActivo">
-          Producto activo
+          Proveedor activo
         </label>
       </div>
 
@@ -149,7 +134,7 @@
 
   <div id="mensaje" class="mensaje"></div>
 
-  <script src="../shared.js"></script>
-  <script src="productos.js"></script>
+  <script src="/shared.js"></script>
+  <script src="proveedores.js"></script>
 </body>
 </html>

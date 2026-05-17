@@ -2,13 +2,26 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const { asyncHandler } = require('../middleware/errorHandler');
 
+function obtenerIdEmpleado(req) {
+    return req.empleado?.id ||
+           req.empleado?.id_empleado ||
+           req.empleado?.empleado_id ||
+           req.user?.id ||
+           req.user?.id_empleado ||
+           null;
+}
+
+const rolesPermitidos = ['Administrador', 'Cajero', 'Inventario', 'Cocina'];
+
 exports.obtenerEmpleados = asyncHandler(async (req, res) => {
     const [rows] = await db.query(`
         SELECT 
             id_empleado,
             nombre,
             usuario,
-            rol
+            rol,
+            activo,
+            fecha_creacion
         FROM empleado
         ORDER BY nombre
     `);
@@ -16,29 +29,80 @@ exports.obtenerEmpleados = asyncHandler(async (req, res) => {
     res.json(rows);
 });
 
+exports.obtenerEmpleado = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const [rows] = await db.query(`
+        SELECT 
+            id_empleado,
+            nombre,
+            usuario,
+            rol,
+            activo,
+            fecha_creacion
+        FROM empleado
+        WHERE id_empleado = ?
+    `, [id]);
+
+    if (rows.length === 0) {
+        return res.status(404).json({
+            error: 'Empleado no encontrado'
+        });
+    }
+
+    res.json(rows[0]);
+});
+
 exports.crearEmpleado = asyncHandler(async (req, res) => {
     const { nombre, usuario, password, rol } = req.body;
 
-    if (!nombre || !usuario || !password || !rol) {
-        return res.status(400).json({ error: 'Todos los campos son requeridos' });
+    if (!nombre || nombre.trim() === '') {
+        return res.status(400).json({
+            error: 'El nombre es requerido'
+        });
+    }
+
+    if (!usuario || usuario.trim() === '') {
+        return res.status(400).json({
+            error: 'El usuario es requerido'
+        });
+    }
+
+    if (!password || password.trim() === '') {
+        return res.status(400).json({
+            error: 'La contraseña es requerida'
+        });
+    }
+
+    if (!rol || !rolesPermitidos.includes(rol)) {
+        return res.status(400).json({
+            error: 'Rol inválido'
+        });
     }
 
     const [existe] = await db.query(
         'SELECT id_empleado FROM empleado WHERE usuario = ?',
-        [usuario]
+        [usuario.trim()]
     );
 
     if (existe.length > 0) {
-        return res.status(400).json({ error: 'El usuario ya existe' });
+        return res.status(400).json({
+            error: 'Ya existe un empleado con ese usuario'
+        });
     }
 
-    const hash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    const [resultado] = await db.query(
-        `INSERT INTO empleado (nombre, usuario, password, rol)
-         VALUES (?, ?, ?, ?)`,
-        [nombre.trim(), usuario.trim(), hash, rol.trim()]
-    );
+    const [resultado] = await db.query(`
+        INSERT INTO empleado
+        (nombre, usuario, password, rol, activo)
+        VALUES (?, ?, ?, ?, 1)
+    `, [
+        nombre.trim(),
+        usuario.trim(),
+        passwordHash,
+        rol
+    ]);
 
     res.json({
         mensaje: 'Empleado creado',
@@ -48,75 +112,110 @@ exports.crearEmpleado = asyncHandler(async (req, res) => {
 
 exports.actualizarEmpleado = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { nombre, usuario, password, rol } = req.body;
+    const { nombre, usuario, rol, activo } = req.body;
 
-    if (!nombre || !usuario || !rol) {
+    if (!nombre || nombre.trim() === '') {
         return res.status(400).json({
-            error: 'Nombre, usuario y rol son requeridos'
+            error: 'El nombre es requerido'
         });
     }
 
-    const [empleado] = await db.query(
-        'SELECT id_empleado FROM empleado WHERE id_empleado = ?',
-        [id]
-    );
+    if (!usuario || usuario.trim() === '') {
+        return res.status(400).json({
+            error: 'El usuario es requerido'
+        });
+    }
 
-    if (empleado.length === 0) {
-        return res.status(404).json({ error: 'Empleado no encontrado' });
+    if (!rol || !rolesPermitidos.includes(rol)) {
+        return res.status(400).json({
+            error: 'Rol inválido'
+        });
     }
 
     const [existe] = await db.query(
         'SELECT id_empleado FROM empleado WHERE usuario = ? AND id_empleado != ?',
-        [usuario, id]
+        [usuario.trim(), id]
     );
 
     if (existe.length > 0) {
-        return res.status(400).json({ error: 'El usuario ya existe' });
-    }
-
-    if (password && password.trim()) {
-        const hash = await bcrypt.hash(password, 10);
-
-        await db.query(
-            `UPDATE empleado
-             SET nombre = ?, usuario = ?, password = ?, rol = ?
-             WHERE id_empleado = ?`,
-            [nombre.trim(), usuario.trim(), hash, rol.trim(), id]
-        );
-    } else {
-        await db.query(
-            `UPDATE empleado
-             SET nombre = ?, usuario = ?, rol = ?
-             WHERE id_empleado = ?`,
-            [nombre.trim(), usuario.trim(), rol.trim(), id]
-        );
-    }
-
-    res.json({ mensaje: 'Empleado actualizado' });
-});
-
-exports.eliminarEmpleado = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    const [ventas] = await db.query(
-        'SELECT id_venta FROM venta WHERE id_empleado = ? LIMIT 1',
-        [id]
-    );
-
-    if (ventas.length > 0) {
         return res.status(400).json({
-            error: 'No se puede eliminar el empleado porque tiene ventas registradas'
+            error: 'Ya existe otro empleado con ese usuario'
         });
     }
 
-    const [result] = await db.query(
-        'DELETE FROM empleado WHERE id_empleado = ?',
+    const [resultado] = await db.query(`
+        UPDATE empleado
+        SET nombre = ?, usuario = ?, rol = ?, activo = ?
+        WHERE id_empleado = ?
+    `, [
+        nombre.trim(),
+        usuario.trim(),
+        rol,
+        activo ? 1 : 0,
+        id
+    ]);
+
+    if (resultado.affectedRows === 0) {
+        return res.status(404).json({
+            error: 'Empleado no encontrado'
+        });
+    }
+
+    res.json({
+        mensaje: 'Empleado actualizado'
+    });
+});
+
+exports.cambiarPassword = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.trim() === '') {
+        return res.status(400).json({
+            error: 'La nueva contraseña es requerida'
+        });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const [resultado] = await db.query(
+        'UPDATE empleado SET password = ? WHERE id_empleado = ?',
+        [passwordHash, id]
+    );
+
+    if (resultado.affectedRows === 0) {
+        return res.status(404).json({
+            error: 'Empleado no encontrado'
+        });
+    }
+
+    res.json({
+        mensaje: 'Contraseña actualizada'
+    });
+});
+
+exports.desactivarEmpleado = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const idEmpleadoSesion = obtenerIdEmpleado(req);
+
+    if (Number(idEmpleadoSesion) === Number(id)) {
+        return res.status(400).json({
+            error: 'No puede desactivar su propio usuario'
+        });
+    }
+
+    const [resultado] = await db.query(
+        'UPDATE empleado SET activo = 0 WHERE id_empleado = ?',
         [id]
     );
 
-    if (result.affectedRows === 0) {
-        return res.status(404).json({ error: 'Empleado no encontrado' });
+    if (resultado.affectedRows === 0) {
+        return res.status(404).json({
+            error: 'Empleado no encontrado'
+        });
     }
 
-    res.json({ mensaje: 'Empleado eliminado' });
+    res.json({
+        mensaje: 'Empleado desactivado'
+    });
 });

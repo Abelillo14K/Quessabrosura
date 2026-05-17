@@ -1,27 +1,29 @@
-let productos = [];
-let historialCompleto = [];
+let insumosCompra = [];
+let insumos = [];
+let compras = [];
+let proveedores = [];
 let filtroActual = '';
 
 const lista = document.getElementById('lista');
-const historial = document.getElementById('historial');
-const totalCarrito = document.getElementById('totalCarrito');
+const tabla = document.getElementById('tabla');
+const totalCompra = document.getElementById('totalCompra');
 
 const btnAgregar = document.getElementById('btnAgregar');
 const btnGuardar = document.getElementById('btnGuardar');
 const btnLimpiar = document.getElementById('btnLimpiar');
 
-async function cargarProductos() {
+async function cargarProveedores() {
     try {
-        const data = await apiFetch('/api/productos');
-        const select = document.getElementById('producto');
+        proveedores = await apiFetch('/api/proveedores');
 
-        select.innerHTML = '<option value="">Seleccionar producto...</option>';
+        const select = document.getElementById('proveedor');
+        select.innerHTML = '<option value="">Sin proveedor</option>';
 
-        data.forEach(producto => {
-            if (producto.activo != 0) {
+        proveedores.forEach(proveedor => {
+            if (proveedor.activo != 0) {
                 select.innerHTML += `
-                    <option value="${producto.id_producto}">
-                        ${producto.nombre}
+                    <option value="${proveedor.id_proveedor}">
+                        ${proveedor.nombre}
                     </option>
                 `;
             }
@@ -32,76 +34,127 @@ async function cargarProductos() {
     }
 }
 
-function agregar() {
-    const select = document.getElementById('producto');
-    const idProducto = parseInt(select.value);
-    const nombre = select.options[select.selectedIndex]?.text.trim() || 'Desconocido';
-    const cantidad = parseInt(document.getElementById('cantidad').value);
-    const precio = parseFloat(document.getElementById('precio').value);
+async function cargarInsumos() {
+    try {
+        insumos = await apiFetch('/api/insumos');
 
-    if (!idProducto) {
-        mostrarError('Seleccione un producto');
+        const select = document.getElementById('insumo');
+        select.innerHTML = '<option value="">Seleccionar insumo...</option>';
+
+        insumos.forEach(insumo => {
+            if (insumo.activo != 0) {
+                select.innerHTML += `
+                    <option 
+                        value="${insumo.id_insumo}"
+                        data-unidad="${insumo.unidad_medida}"
+                        data-costo="${insumo.costo_unitario}"
+                    >
+                        ${insumo.nombre} (${insumo.unidad_medida})
+                    </option>
+                `;
+            }
+        });
+
+    } catch (err) {
+        mostrarError(err.message);
+    }
+}
+
+function cargarPrecioSugerido() {
+    const select = document.getElementById('insumo');
+    const option = select.options[select.selectedIndex];
+
+    if (option && option.dataset.costo) {
+        document.getElementById('precio_unitario').value = option.dataset.costo;
+    } else {
+        document.getElementById('precio_unitario').value = '';
+    }
+}
+
+function calcularTotalCompra() {
+    return insumosCompra.reduce((total, item) => {
+        return total + Number(item.cantidad) * Number(item.precio_unitario);
+    }, 0);
+}
+
+function agregarInsumo() {
+    const select = document.getElementById('insumo');
+
+    const idInsumo = parseInt(select.value);
+    const cantidad = parseFloat(document.getElementById('cantidad').value);
+    const precioUnitario = parseFloat(document.getElementById('precio_unitario').value);
+
+    if (!idInsumo) {
+        mostrarError('Seleccione un insumo');
         return;
     }
 
-    if (!cantidad || cantidad < 1) {
+    if (isNaN(cantidad) || cantidad <= 0) {
         mostrarError('Ingrese una cantidad válida');
         return;
     }
 
-    if (!precio || precio <= 0) {
-        mostrarError('Ingrese un precio de compra válido');
+    if (isNaN(precioUnitario) || precioUnitario < 0) {
+        mostrarError('Ingrese un precio unitario válido');
         return;
     }
 
-    const existente = productos.find(p => p.id_producto === idProducto && p.precio === precio);
+    const insumo = insumos.find(i => Number(i.id_insumo) === Number(idInsumo));
+
+    if (!insumo) {
+        mostrarError('Insumo no encontrado');
+        return;
+    }
+
+    const existente = insumosCompra.find(item => Number(item.id_insumo) === Number(idInsumo));
 
     if (existente) {
         existente.cantidad += cantidad;
+        existente.precio_unitario = precioUnitario;
     } else {
-        productos.push({
-            id_producto: idProducto,
-            nombre,
+        insumosCompra.push({
+            id_insumo: idInsumo,
+            nombre: insumo.nombre,
+            unidad_medida: insumo.unidad_medida,
             cantidad,
-            precio
+            precio_unitario: precioUnitario
         });
     }
 
     select.value = '';
     document.getElementById('cantidad').value = '';
-    document.getElementById('precio').value = '';
+    document.getElementById('precio_unitario').value = '';
 
-    mostrarLista();
-    mostrarExito('Producto agregado a la compra');
+    renderizarLista();
+    mostrarExito('Insumo agregado');
 }
 
-function mostrarLista() {
+function renderizarLista() {
     lista.innerHTML = '';
 
-    if (productos.length === 0) {
+    if (insumosCompra.length === 0) {
         lista.innerHTML = `
             <tr class="empty-row">
-                <td colspan="5">No hay productos agregados</td>
+                <td colspan="6">No hay insumos agregados</td>
             </tr>
         `;
-        totalCarrito.textContent = 'Q0.00';
+
+        totalCompra.textContent = 'Q0.00';
         return;
     }
 
-    let total = 0;
-
-    productos.forEach((producto, index) => {
-        const subtotal = Number(producto.cantidad) * Number(producto.precio);
-        total += subtotal;
+    insumosCompra.forEach((item, index) => {
+        const subtotal = Number(item.cantidad) * Number(item.precio_unitario);
 
         lista.innerHTML += `
             <tr>
-                <td><strong>${producto.nombre}</strong></td>
-                <td>${producto.cantidad}</td>
-                <td>${formatearMoneda(producto.precio)}</td>
+                <td><strong>${item.nombre}</strong></td>
+                <td>${item.unidad_medida}</td>
+                <td>${Number(item.cantidad).toFixed(2)}</td>
+                <td>${formatearMoneda(item.precio_unitario)}</td>
                 <td>${formatearMoneda(subtotal)}</td>
                 <td>
-                    <button class="btn-delete" onclick="eliminarProducto(${index})">
+                    <button class="btn-delete" onclick="eliminarInsumo(${index})">
                         Eliminar
                     </button>
                 </td>
@@ -109,32 +162,35 @@ function mostrarLista() {
         `;
     });
 
-    totalCarrito.textContent = formatearMoneda(total);
+    totalCompra.textContent = formatearMoneda(calcularTotalCompra());
 }
 
-function eliminarProducto(index) {
-    productos.splice(index, 1);
-    mostrarLista();
+function eliminarInsumo(index) {
+    insumosCompra.splice(index, 1);
+    renderizarLista();
 }
 
-function limpiarCarrito() {
-    if (productos.length === 0) {
-        mostrarError('No hay productos para limpiar');
+function limpiarCompra() {
+    if (insumosCompra.length === 0) {
+        mostrarError('No hay insumos para limpiar');
         return;
     }
 
-    if (!confirm('¿Limpiar todos los productos de la compra?')) {
+    if (!confirm('¿Limpiar la compra actual?')) {
         return;
     }
 
-    productos = [];
-    mostrarLista();
+    insumosCompra = [];
+
+    document.getElementById('proveedor').value = '';
+    renderizarLista();
+
     mostrarExito('Compra limpiada');
 }
 
 async function guardarCompra() {
-    if (productos.length === 0) {
-        mostrarError('No hay productos para guardar');
+    if (insumosCompra.length === 0) {
+        mostrarError('Debe agregar al menos un insumo');
         return;
     }
 
@@ -144,14 +200,26 @@ async function guardarCompra() {
 
         const data = await apiFetch('/api/compras', {
             method: 'POST',
-            body: { productos }
+            body: {
+                insumos: insumosCompra.map(item => ({
+                    id_insumo: item.id_insumo,
+                    cantidad: item.cantidad,
+                    precio_unitario: item.precio_unitario
+                })),
+                id_proveedor: document.getElementById('proveedor').value || null
+            }
         });
 
-        productos = [];
-        mostrarLista();
-        await cargarHistorial();
+        insumosCompra = [];
 
-        mostrarExito(`Compra #${data.id_compra} registrada exitosamente`);
+        document.getElementById('proveedor').value = '';
+
+        renderizarLista();
+
+        await cargarInsumos();
+        await cargarCompras();
+
+        mostrarExito(`Compra #${data.id_compra} registrada`);
 
     } catch (err) {
         mostrarError(err.message);
@@ -161,41 +229,28 @@ async function guardarCompra() {
     }
 }
 
-async function cargarHistorial() {
+async function cargarCompras() {
     try {
-        historialCompleto = await apiFetch('/api/compras');
-        aplicarFiltroHistorial();
+        compras = await apiFetch('/api/compras');
+        aplicarFiltro();
 
     } catch (err) {
-        historial.innerHTML = `
+        tabla.innerHTML = `
             <tr class="empty-row">
-                <td colspan="5">No se pudo cargar el historial</td>
+                <td colspan="8">No se pudieron cargar las compras</td>
             </tr>
         `;
         mostrarError(err.message);
     }
 }
 
-function buscarHistorial() {
-    filtroActual = document.getElementById('busqueda').value.trim().toLowerCase();
-    aplicarFiltroHistorial();
-}
+function renderizarTabla(data) {
+    tabla.innerHTML = '';
 
-function aplicarFiltroHistorial() {
-    historial.innerHTML = '';
-
-    let data = historialCompleto;
-
-    if (filtroActual) {
-        data = data.filter(compra => {
-            return String(compra.id_compra).includes(filtroActual);
-        });
-    }
-
-    if (data.length === 0) {
-        historial.innerHTML = `
+    if (!data || data.length === 0) {
+        tabla.innerHTML = `
             <tr class="empty-row">
-                <td colspan="5">No se encontraron compras</td>
+                <td colspan="8">No se encontraron compras</td>
             </tr>
         `;
         return;
@@ -204,11 +259,14 @@ function aplicarFiltroHistorial() {
     data.forEach(compra => {
         const estaAnulada = compra.anulada == 1;
 
-        historial.innerHTML += `
+        tabla.innerHTML += `
             <tr class="${estaAnulada ? 'row-anulada' : ''}">
-                <td>#${compra.id_compra}</td>
+                <td><strong>#${compra.id_compra}</strong></td>
                 <td>${formatearFecha(compra.fecha)}</td>
+                <td>${compra.hora ? String(compra.hora).slice(0, 5) : 'N/A'}</td>
                 <td>${formatearMoneda(compra.total)}</td>
+                <td>${compra.proveedor || '—'}</td>
+                <td>${compra.empleado || '—'}</td>
                 <td>
                     <span class="status ${estaAnulada ? 'status-anulada' : 'status-activa'}">
                         ${estaAnulada ? 'Anulada' : 'Activa'}
@@ -229,39 +287,58 @@ function aplicarFiltroHistorial() {
     });
 }
 
+function buscarCompra() {
+    filtroActual = document.getElementById('busqueda').value.trim().toLowerCase();
+    aplicarFiltro();
+}
+
+function aplicarFiltro() {
+    if (!filtroActual) {
+        renderizarTabla(compras);
+        return;
+    }
+
+    const filtradas = compras.filter(compra => {
+        return String(compra.id_compra).includes(filtroActual) ||
+               String(compra.proveedor || '').toLowerCase().includes(filtroActual) ||
+               String(compra.empleado || '').toLowerCase().includes(filtroActual);
+    });
+
+    renderizarTabla(filtradas);
+}
+
 async function verDetalle(id) {
     try {
         const data = await apiFetch(`/api/compras/${id}/detalle`);
-        const body = document.getElementById('detalleBody');
 
-        document.getElementById('detalleTitulo').textContent = `Detalle de Compra #${id}`;
+        const body = document.getElementById('detalleBody');
         body.innerHTML = '';
 
-        if (data.length === 0) {
-            body.innerHTML = `
-                <tr class="empty-row">
-                    <td colspan="4">Esta compra no tiene detalle registrado</td>
-                </tr>
-            `;
-            document.getElementById('detalleTotal').textContent = 'Q0.00';
-            document.getElementById('modalDetalle').style.display = 'block';
-            return;
-        }
+        document.getElementById('detalleTitulo').textContent = `Detalle de Compra #${id}`;
 
         let total = 0;
 
-        data.forEach(detalle => {
-            total += parseFloat(detalle.subtotal || 0);
+        data.detalle.forEach(item => {
+            total += Number(item.subtotal || 0);
 
             body.innerHTML += `
                 <tr>
-                    <td><strong>${detalle.producto}</strong></td>
-                    <td>${detalle.cantidad}</td>
-                    <td>${formatearMoneda(detalle.precio_compra)}</td>
-                    <td>${formatearMoneda(detalle.subtotal)}</td>
+                    <td><strong>${item.insumo}</strong></td>
+                    <td>${item.unidad_medida}</td>
+                    <td>${Number(item.cantidad || 0).toFixed(2)}</td>
+                    <td>${formatearMoneda(item.precio_unitario)}</td>
+                    <td>${formatearMoneda(item.subtotal)}</td>
                 </tr>
             `;
         });
+
+        if (data.detalle.length === 0) {
+            body.innerHTML = `
+                <tr class="empty-row">
+                    <td colspan="5">Esta compra no tiene detalle</td>
+                </tr>
+            `;
+        }
 
         document.getElementById('detalleTotal').textContent = formatearMoneda(total);
         document.getElementById('modalDetalle').style.display = 'block';
@@ -272,7 +349,7 @@ async function verDetalle(id) {
 }
 
 async function anularCompra(id) {
-    if (!confirm(`¿Está seguro de anular la compra #${id}? Se revertirá el stock.`)) {
+    if (!confirm(`¿Anular la compra #${id}? Esto restará del inventario los insumos comprados.`)) {
         return;
     }
 
@@ -281,7 +358,9 @@ async function anularCompra(id) {
             method: 'DELETE'
         });
 
-        await cargarHistorial();
+        await cargarInsumos();
+        await cargarCompras();
+
         mostrarExito(`Compra #${id} anulada`);
 
     } catch (err) {
@@ -289,18 +368,21 @@ async function anularCompra(id) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const empleado = verificarSesion();
 
     if (!empleado) {
         return;
     }
 
-    cargarProductos();
-    cargarHistorial();
-    mostrarLista();
+    await cargarProveedores();
+    await cargarInsumos();
+    await cargarCompras();
 
-    btnAgregar.addEventListener('click', agregar);
+    renderizarLista();
+
+    document.getElementById('insumo').addEventListener('change', cargarPrecioSugerido);
+    btnAgregar.addEventListener('click', agregarInsumo);
     btnGuardar.addEventListener('click', guardarCompra);
-    btnLimpiar.addEventListener('click', limpiarCarrito);
+    btnLimpiar.addEventListener('click', limpiarCompra);
 });

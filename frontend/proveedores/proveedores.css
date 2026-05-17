@@ -1,0 +1,9 @@
+.form-group-wide {
+  flex: 2;
+  min-width: 260px;
+}
+
+.row-inactivo {
+  opacity: 0.55;
+  background: #fafafa;
+}

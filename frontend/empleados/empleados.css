@@ -1,28 +1,33 @@
-.role-badge {
+.rol-badge {
   display: inline-block;
-  padding: 5px 12px;
+  padding: 4px 12px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
 }
 
-.role-badge.cocinero {
+.rol-admin {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.rol-cajero {
   background: #e8f5e9;
   color: #2e7d32;
 }
 
-.role-badge.cajero {
+.rol-inventario {
   background: #e3f2fd;
   color: #1565c0;
 }
 
-.role-badge.mesero {
+.rol-cocina {
   background: #fff3e0;
   color: #ef6c00;
 }
 
-.role-badge.administrador {
-  background: #f3e5f5;
-  color: #7b1fa2;
+.row-inactivo {
+  opacity: 0.55;
+  background: #fafafa;
 }

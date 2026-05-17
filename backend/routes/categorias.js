@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const controller = require('../controllers/productoController');
+const controller = require('../controllers/categoriaController');
 const { verificarToken, autorizarRoles } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 
@@ -10,37 +10,31 @@ router.use(verificarToken);
 router.get(
     '/',
     autorizarRoles('Administrador', 'Inventario', 'Cajero', 'Cocina'),
-    asyncHandler(controller.obtenerProductos)
+    asyncHandler(controller.obtenerCategorias)
 );
 
 router.get(
     '/:id',
     autorizarRoles('Administrador', 'Inventario', 'Cajero', 'Cocina'),
-    asyncHandler(controller.obtenerProducto)
+    asyncHandler(controller.obtenerCategoria)
 );
 
 router.post(
     '/',
     autorizarRoles('Administrador', 'Inventario'),
-    asyncHandler(controller.crearProducto)
+    asyncHandler(controller.crearCategoria)
 );
 
 router.put(
     '/:id',
     autorizarRoles('Administrador', 'Inventario'),
-    asyncHandler(controller.actualizarProducto)
-);
-
-router.patch(
-    '/:id/activo',
-    autorizarRoles('Administrador', 'Inventario'),
-    asyncHandler(controller.actualizarActivo)
+    asyncHandler(controller.actualizarCategoria)
 );
 
 router.delete(
     '/:id',
     autorizarRoles('Administrador', 'Inventario'),
-    asyncHandler(controller.desactivarProducto)
+    asyncHandler(controller.desactivarCategoria)
 );
 
 module.exports = router;
