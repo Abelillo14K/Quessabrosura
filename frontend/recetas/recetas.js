@@ -2,13 +2,14 @@ let productos = [];
 let insumos = [];
 let recetaActual = [];
 let recetasTodas = [];
+let recetasAgrupadas = [];
 let idProductoSeleccionado = null;
 let filtroActual = '';
 
 const selectProducto = document.getElementById('producto');
 const selectInsumo = document.getElementById('insumo');
 const tablaReceta = document.getElementById('tablaReceta');
-const tablaTodas = document.getElementById('tablaTodas');
+const resumenRecetas = document.getElementById('resumenRecetas');
 
 const btnCargarReceta = document.getElementById('btnCargarReceta');
 const btnAgregarInsumo = document.getElementById('btnAgregarInsumo');
@@ -63,16 +64,44 @@ async function cargarInsumos() {
 async function cargarTodasLasRecetas() {
     try {
         recetasTodas = await apiFetch('/api/recetas');
+        recetasAgrupadas = agruparRecetasPorProducto(recetasTodas);
         aplicarFiltroTodas();
 
     } catch (err) {
-        tablaTodas.innerHTML = `
-            <tr class="empty-row">
-                <td colspan="5">No se pudieron cargar las recetas</td>
-            </tr>
+        resumenRecetas.innerHTML = `
+            <div class="empty-card">
+                No se pudieron cargar las recetas
+            </div>
         `;
         mostrarError(err.message);
     }
+}
+
+function agruparRecetasPorProducto(lista) {
+    const mapa = {};
+
+    lista.forEach(item => {
+        const idProducto = item.id_producto;
+
+        if (!mapa[idProducto]) {
+            mapa[idProducto] = {
+                id_producto: item.id_producto,
+                producto: item.producto,
+                categoria: item.categoria,
+                ingredientes: []
+            };
+        }
+
+        mapa[idProducto].ingredientes.push({
+            id_receta: item.id_receta,
+            id_insumo: item.id_insumo,
+            insumo: item.insumo,
+            cantidad_usada: item.cantidad_usada,
+            unidad_medida: item.unidad_medida
+        });
+    });
+
+    return Object.values(mapa);
 }
 
 async function cargarRecetaProducto() {
@@ -87,6 +116,7 @@ async function cargarRecetaProducto() {
         const data = await apiFetch(`/api/recetas/${idProducto}`);
 
         idProductoSeleccionado = idProducto;
+
         recetaActual = data.receta.map(item => ({
             id_insumo: item.id_insumo,
             insumo: item.insumo,
@@ -169,14 +199,101 @@ function renderizarRecetaActual() {
     recetaActual.forEach((item, index) => {
         tablaReceta.innerHTML += `
             <tr>
-                <td><strong>${item.insumo}</strong></td>
-                <td>${Number(item.cantidad_usada).toFixed(2)}</td>
-                <td>${item.unidad_medida}</td>
-                <td>${Number(item.stock || 0).toFixed(2)}</td>
+                <td>
+                    <strong>${item.insumo}</strong>
+                </td>
+
+                <td>
+                    ${Number(item.cantidad_usada || 0).toFixed(2)}
+                </td>
+
+                <td>
+                    ${item.unidad_medida || 'N/A'}
+                </td>
+
+                <td>
+                    ${Number(item.stock || 0).toFixed(2)}
+                </td>
+
                 <td>
                     <button class="btn-delete" onclick="eliminarInsumoReceta(${index})">
                         Eliminar
                     </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function renderizarResumenRecetas(data) {
+    resumenRecetas.innerHTML = '';
+
+    if (!data || data.length === 0) {
+        resumenRecetas.innerHTML = `
+            <div class="empty-card">
+                No hay recetas registradas
+            </div>
+        `;
+        return;
+    }
+
+    resumenRecetas.innerHTML = `
+        <div class="tabla-recetas-wrapper">
+            <table class="tabla-recetas">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Ingredientes</th>
+                        <th>Ver receta</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaResumenRecetas"></tbody>
+            </table>
+        </div>
+    `;
+
+    const tablaResumen = document.getElementById('tablaResumenRecetas');
+
+    data.forEach(receta => {
+        const ingredientesHtml = receta.ingredientes.map(item => {
+            return `
+                <li>
+                    <span>${item.insumo}</span>
+                    <strong>${Number(item.cantidad_usada).toFixed(2)} ${item.unidad_medida}</strong>
+                </li>
+            `;
+        }).join('');
+
+        tablaResumen.innerHTML += `
+            <tr>
+                <td>
+                    <strong>${receta.producto}</strong>
+                </td>
+
+                <td>
+                    <span class="categoria-receta">${receta.categoria}</span>
+                </td>
+
+                <td>
+                    <span class="ingredientes-count">${receta.ingredientes.length} ingrediente(s)</span>
+                </td>
+
+                <td class="columna-ojo">
+                    <div class="contenedor-ojo">
+                        <button type="button" class="btn-ojo" aria-label="Ver receta">🌮</button>
+
+                        <div class="popup-receta">
+                            <div class="popup-titulo">
+                                <strong>${receta.producto}</strong>
+                                <span>${receta.categoria}</span>
+                            </div>
+
+                            <ul>
+                                ${ingredientesHtml}
+                            </ul>
+                        </div>
+                    </div>
                 </td>
             </tr>
         `;
@@ -226,31 +343,6 @@ async function guardarReceta() {
     }
 }
 
-function renderizarTodasLasRecetas(data) {
-    tablaTodas.innerHTML = '';
-
-    if (!data || data.length === 0) {
-        tablaTodas.innerHTML = `
-            <tr class="empty-row">
-                <td colspan="5">No hay recetas registradas</td>
-            </tr>
-        `;
-        return;
-    }
-
-    data.forEach(item => {
-        tablaTodas.innerHTML += `
-            <tr>
-                <td><strong>${item.producto}</strong></td>
-                <td>${item.categoria}</td>
-                <td>${item.insumo}</td>
-                <td>${Number(item.cantidad_usada).toFixed(2)}</td>
-                <td>${item.unidad_medida}</td>
-            </tr>
-        `;
-    });
-}
-
 function buscarRecetas() {
     filtroActual = document.getElementById('busqueda').value.trim().toLowerCase();
     aplicarFiltroTodas();
@@ -258,17 +350,22 @@ function buscarRecetas() {
 
 function aplicarFiltroTodas() {
     if (!filtroActual) {
-        renderizarTodasLasRecetas(recetasTodas);
+        renderizarResumenRecetas(recetasAgrupadas);
         return;
     }
 
-    const filtradas = recetasTodas.filter(item => {
-        return String(item.producto || '').toLowerCase().includes(filtroActual) ||
-               String(item.categoria || '').toLowerCase().includes(filtroActual) ||
-               String(item.insumo || '').toLowerCase().includes(filtroActual);
+    const filtradas = recetasAgrupadas.filter(receta => {
+        const coincideProducto = String(receta.producto || '').toLowerCase().includes(filtroActual);
+        const coincideCategoria = String(receta.categoria || '').toLowerCase().includes(filtroActual);
+
+        const coincideIngrediente = receta.ingredientes.some(item => {
+            return String(item.insumo || '').toLowerCase().includes(filtroActual);
+        });
+
+        return coincideProducto || coincideCategoria || coincideIngrediente;
     });
 
-    renderizarTodasLasRecetas(filtradas);
+    renderizarResumenRecetas(filtradas);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

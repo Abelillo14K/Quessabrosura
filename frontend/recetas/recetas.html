@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Recetas - Quessabrosura</title>
-  <link rel="stylesheet" href="../base.css">
-  <link rel="stylesheet" href="../menu.css">
+  <link rel="stylesheet" href="/base.css">
+  <link rel="stylesheet" href="/menu.css">
   <link rel="stylesheet" href="recetas.css">
 </head>
 <body class="with-sidebar">
@@ -108,26 +108,14 @@
       <h2>Resumen de Recetas</h2>
 
       <div class="search-box">
-        <input type="text" id="busqueda" placeholder="Buscar por producto o insumo..." oninput="buscarRecetas()">
+        <input type="text" id="busqueda" placeholder="Buscar receta por producto, categoría o ingrediente..." oninput="buscarRecetas()">
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Producto</th>
-            <th>Categoría</th>
-            <th>Insumo</th>
-            <th>Cantidad</th>
-            <th>Unidad</th>
-          </tr>
-        </thead>
-
-        <tbody id="tablaTodas">
-          <tr class="empty-row">
-            <td colspan="5">Cargando recetas...</td>
-          </tr>
-        </tbody>
-      </table>
+      <div id="resumenRecetas" class="resumen-recetas">
+        <div class="empty-card">
+          Cargando recetas...
+        </div>
+      </div>
     </section>
   </main>
 
@@ -137,8 +125,7 @@
 
   <div id="mensaje" class="mensaje"></div>
 
-  <script src="../shared.js"></script>
+  <script src="/shared.js"></script>
   <script src="recetas.js"></script>
-  
 </body>
 </html>
