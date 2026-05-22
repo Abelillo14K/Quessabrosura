@@ -167,3 +167,148 @@ window.onclick = function (event) {
         cerrarModal();
     }
 };
+
+const permisosModulos = {
+    Administrador: [
+        'empleados',
+        'ventas',
+        'compras',
+        'productos',
+        'inventario',
+        'recetas',
+        'proveedores',
+        'gastos',
+        'cortes',
+        'ticket'
+    ],
+    Cajero: [
+        'ventas',
+        'gastos',
+        'cortes',
+        'ticket'
+    ],
+    Inventario: [
+        'compras',
+        'productos',
+        'inventario',
+        'recetas',
+        'proveedores'
+    ],
+    Cocina: [
+        'recetas'
+    ]
+};
+
+function obtenerEmpleadoSesion() {
+    const empleadoLocal = localStorage.getItem('empleado');
+    const empleadoSession = sessionStorage.getItem('empleado');
+    const empleadoGuardado = empleadoLocal || empleadoSession;
+
+    if (!empleadoGuardado) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(empleadoGuardado);
+    } catch (error) {
+        return null;
+    }
+}
+
+function obtenerModuloActual() {
+    const path = window.location.pathname.toLowerCase();
+
+    if (path.includes('/empleados/')) return 'empleados';
+    if (path.includes('/ventas/')) return 'ventas';
+    if (path.includes('/compras/')) return 'compras';
+    if (path.includes('/productos/')) return 'productos';
+    if (path.includes('/inventario/')) return 'inventario';
+    if (path.includes('/recetas/')) return 'recetas';
+    if (path.includes('/proveedores/')) return 'proveedores';
+    if (path.includes('/gastos/')) return 'gastos';
+    if (path.includes('/cortes/')) return 'cortes';
+    if (path.includes('/ticket/')) return 'ticket';
+
+    return null;
+}
+
+function usuarioPuedeEntrar(modulo) {
+    const empleado = obtenerEmpleadoSesion();
+
+    if (!empleado || !empleado.rol) {
+        return false;
+    }
+
+    const permisos = permisosModulos[empleado.rol] || [];
+    return permisos.includes(modulo);
+}
+
+function aplicarPermisosMenu() {
+    const empleado = obtenerEmpleadoSesion();
+
+    if (!empleado || !empleado.rol) {
+        return;
+    }
+
+    const permisos = permisosModulos[empleado.rol] || [];
+    const links = document.querySelectorAll('.sidebar-menu a');
+
+    links.forEach(link => {
+        const href = link.getAttribute('href') || '';
+        let modulo = null;
+
+        if (href.includes('empleados')) modulo = 'empleados';
+        if (href.includes('ventas')) modulo = 'ventas';
+        if (href.includes('compras')) modulo = 'compras';
+        if (href.includes('productos')) modulo = 'productos';
+        if (href.includes('inventario')) modulo = 'inventario';
+        if (href.includes('recetas')) modulo = 'recetas';
+        if (href.includes('proveedores')) modulo = 'proveedores';
+        if (href.includes('gastos')) modulo = 'gastos';
+        if (href.includes('cortes')) modulo = 'cortes';
+
+        if (modulo && !permisos.includes(modulo)) {
+            const li = link.closest('li');
+
+            if (li) {
+                li.style.display = 'none';
+            }
+        }
+    });
+}
+
+function protegerModuloActual() {
+    const modulo = obtenerModuloActual();
+
+    if (!modulo) {
+        return;
+    }
+
+    if (!usuarioPuedeEntrar(modulo)) {
+        alert('No tiene permisos para entrar a este módulo');
+
+        const empleado = obtenerEmpleadoSesion();
+
+        if (!empleado || !empleado.rol) {
+            window.location.href = '/login/login.html';
+            return;
+        }
+
+        if (empleado.rol === 'Administrador') {
+            window.location.href = '/empleados/empleados.html';
+        } else if (empleado.rol === 'Cajero') {
+            window.location.href = '/ventas/ventas.html';
+        } else if (empleado.rol === 'Inventario') {
+            window.location.href = '/inventario/inventario.html';
+        } else if (empleado.rol === 'Cocina') {
+            window.location.href = '/recetas/recetas.html';
+        } else {
+            window.location.href = '/login/login.html';
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    protegerModuloActual();
+    aplicarPermisosMenu();
+});

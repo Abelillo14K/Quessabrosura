@@ -19,9 +19,6 @@ const btnAgregarPago = document.getElementById('btnAgregarPago');
 const btnCobrar = document.getElementById('btnCobrar');
 const btnLimpiar = document.getElementById('btnLimpiar');
 const btnAbrirPago = document.getElementById('btnAbrirPago');
-const btnPagoEfectivo = document.getElementById('btnPagoEfectivo');
-const btnPagoTransferencia = document.getElementById('btnPagoTransferencia');
-const btnPagoTarjeta = document.getElementById('btnPagoTarjeta');
 
 function obtenerFechaActual() {
     const hoy = new Date();
@@ -319,33 +316,6 @@ function agregarPago() {
 
     renderizarPagos();
     actualizarPagosUI();
-}
-
-function agregarPagoTotal(nombreMetodo) {
-    const totalVenta = calcularTotalVenta();
-
-    if (totalVenta <= 0) {
-        mostrarError('Primero agregue productos a la venta');
-        return;
-    }
-
-    const metodo = metodosPago.find(m => String(m.nombre).toLowerCase() === String(nombreMetodo).toLowerCase());
-
-    if (!metodo) {
-        mostrarError(`No existe método de pago ${nombreMetodo}`);
-        return;
-    }
-
-    pagosVenta = [{
-        id_metodo_pago: metodo.id_metodo_pago,
-        metodo: metodo.nombre,
-        monto: totalVenta,
-        referencia: ''
-    }];
-
-    renderizarPagos();
-    actualizarPagosUI();
-    mostrarExito(`Pago total en ${metodo.nombre} agregado`);
 }
 
 function renderizarPagos() {
@@ -698,7 +668,4 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnCobrar.addEventListener('click', guardarVenta);
     btnLimpiar.addEventListener('click', limpiarVenta);
     btnAbrirPago.addEventListener('click', abrirPago);
-    btnPagoEfectivo.addEventListener('click', () => agregarPagoTotal('Efectivo'));
-    btnPagoTransferencia.addEventListener('click', () => agregarPagoTotal('Transferencia'));
-    btnPagoTarjeta.addEventListener('click', () => agregarPagoTotal('Tarjeta'));
 });
